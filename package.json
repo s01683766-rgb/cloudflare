@@ -1,0 +1,12 @@
+{
+  "name": "ledger-terminal-app",
+  "version": "1.0.0",
+  "description": "Secure ledger terminal application",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
