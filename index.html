@@ -7,9 +7,18 @@
   <title>LEDGER // MASTER TERMINAL</title>
 
   <style>
-    :root { --bg: #000000; --fg: #ffffff; --dim: #888888; --yellow: #ffd700; --accent-green: #2ea043; --accent-blue: #58a6ff; --accent-red: #da3633; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--fg); font-family: 'Courier New', Courier, monospace; min-height: 100vh; padding: 8px; display: flex; justify-content: center; text-transform: uppercase; overflow-x: hidden; }
+    :root { 
+      --bg: #000000; 
+      --fg: #ffffff; 
+      --dim: #888888; 
+      --yellow: #ffd700; 
+      --accent-green: #2ea043; 
+      --accent-blue: #58a6ff; 
+      --accent-red: #da3633; 
+      --font-family: 'Courier New', Courier, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
+    body { background: var(--bg); color: var(--fg); min-height: 100vh; padding: 8px; display: flex; justify-content: center; text-transform: uppercase; overflow-x: hidden; }
     .prs-terminal { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 70px; }
     .bold { font-weight: bold; } .dim { color: var(--dim); } .blink { animation: blinker 1s linear infinite; }
     @keyframes blinker { 50% { opacity: 0; } }
@@ -39,7 +48,6 @@
     }
 
     .active-sub-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
-    button.active-action-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; }
     button.hit-flash-btn { background: var(--accent-green) !important; color: #fff !important; transform: scale(0.98); }
     
     .nav-btn.active-main-tab { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
@@ -54,14 +62,13 @@
     .status-bar-divider { border-bottom: 2px dotted var(--fg); width: 100%; margin-bottom: 2px; }
     .ledger-header-brand { width: 100%; text-align: center; font-size: 0.85rem; border-bottom: 1px dashed var(--fg); padding-bottom: 2px; margin-bottom: 2px; letter-spacing: 1px; }
 
-    /* Post-login action bar & nav bar (Hidden pre-login as requested) */
     .post-login-controls { display: none; flex-direction: column; gap: 4px; }
 
     .mid-action-bar { border: 2px solid var(--fg); border-top: none; padding: 6px 8px; background: #111; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
     .mid-action-bar button { flex: 1; font-size: 0.7rem; padding: 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--fg); }
 
     .nav-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border-bottom: 2px solid var(--fg); padding-bottom: 4px; background: var(--bg); }
-    .nav-btn { background: var(--bg); color: var(--dim); border: 1px solid var(--dim); font-size: 0.5rem; padding: 5px 1px; }
+    .nav-btn { background: var(--bg); color: var(--dim); border: 1px solid var(--dim); font-size: 0.5rem; padding: 5px 1px; text-align: center; cursor: pointer; text-transform: uppercase; }
 
     #sliding-content-container { overflow-y: auto; max-height: calc(100vh - 150px); display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
 
@@ -81,8 +88,8 @@
 
     .table-container { max-height: 280px; overflow-y: auto; border: 1px solid var(--fg); }
     table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-    th { border-bottom: 1px solid var(--fg); text-align: left; padding: 4px; position: sticky; top: 0; background: var(--bg); }
-    td { border-bottom: 1px dashed var(--dim); padding: 4px; }
+    th { border-bottom: 1px solid var(--fg); text-align: left; padding: 4px; position: sticky; top: 0; background: var(--bg); z-index: 2; }
+    td { border-bottom: 1px dashed var(--dim); padding: 4px; vertical-align: middle; }
 
     .view-page { display: none; flex-direction: column; gap: 8px; }
     .stat-val { font-size: 1.2rem; font-weight: bold; margin-top: 2px; letter-spacing: 1px; }
@@ -100,24 +107,34 @@
     .print-controls-bar label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
     .print-receipt-header { display: none; }
 
-    @media print {
-      body { background: #fff !important; color: #000 !important; }
-      .prs-terminal > *:not(.view-page), #static-upper-dock, button, form, .box-title span:last-child, .grid-2, .grid-3, .grid-4, .task-result-box, input, select, textarea, .print-controls-bar { display: none !important; }
-      .view-page { display: none !important; }
-      .view-page[style*="flex"] { display: block !important; }
-      .prs-terminal { width: 100% !important; max-width: none !important; padding: 0 !important; }
-      .box { border: none !important; padding: 0 !important; }
-      .box-title { border-bottom: 2px solid #000 !important; color: #000 !important; margin-bottom: 6px !important; }
-      .print-receipt-header { display: block !important; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #000; font-size: 0.75rem; line-height: 1.3; color: #000 !important; }
-      .table-container { max-height: none !important; overflow: visible !important; border: 1px solid #000 !important; }
-      table { width: 100% !important; border-collapse: collapse !important; }
-      th, td { border: 1px solid #000 !important; color: #000 !important; padding: 4px !important; }
-      th { background: #eee !important; }
+    .badge {
+      background-color: var(--accent-red);
+      color: white;
+      border-radius: 50%;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: bold;
     }
 
-    @media (max-width: 650px) {
-      .grid-2, .grid-3, .grid-4, .admin-menu-grid, .account-menu-grid { grid-template-columns: 1fr; }
-      .nav-bar { grid-template-columns: repeat(7, 1fr); }
+    .chat-box {
+      height: calc(65vh - 80px);
+      overflow-y: auto;
+      border: 1px dashed var(--dim);
+      padding: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chat-msg {
+      margin-bottom: 4px;
+      background: #111;
+      border: 1px solid var(--dim);
+      padding: 6px;
+    }
+    .chat-msg span {
+      color: var(--accent-yellow);
     }
   </style>
 
@@ -142,7 +159,7 @@
         </select>
       </div>
       <div>
-        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
+        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER 11-DIGIT ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
       </div>
     </div>
 
@@ -177,28 +194,17 @@
   </div>
 </div>
 
-<!-- CENTERED POPUP MODAL FOR VIEW REQUEST STATUS -->
+<!-- STATUS POPUP MODAL -->
 <div id="status-popup-modal">
   <div class="box" style="width: 100%; max-width: 450px; background: #111; border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
     <div class="box-title">
       <span>PRE-LOGIN REQUEST STATUS TRACKER</span>
       <span onclick="closeStatusPopupModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
     </div>
-    <p class="dim" style="font-size: 0.75rem;">ENTER 10-CHARACTER REF ID (COMBINATION OF ALPHA, NUM, UPPER, LOWER, SPECIAL):</p>
+    <p class="dim" style="font-size: 0.75rem;">ENTER 10-CHARACTER REF ID:</p>
     <input type="text" id="prelogin-ref-input" placeholder="ENTER 10-CHAR REF ID..." maxlength="10" style="font-size: 0.9rem; padding: 10px;" oninput="trackPreLoginRef(event)" />
     <div id="prelogin-ref-result" style="font-size: 0.75rem; color: var(--dim); padding: 6px; border: 1px dashed var(--dim); min-height: 50px;">STATUS RESULTS WILL APPEAR HERE...</div>
     <button class="inverted" onclick="closeStatusPopupModal()" style="padding: 8px; margin-top: 4px;">[ CLOSE WINDOW ]</button>
-  </div>
-</div>
-
-<!-- GENERIC CENTERED POPUP MODAL FOR CHAT / ADMIN WINDOWS -->
-<div id="generic-centered-modal">
-  <div class="box" id="generic-modal-box" style="width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; background: var(--bg); border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-    <div class="box-title">
-      <span id="generic-modal-title">MODAL DESK</span>
-      <span onclick="closeGenericModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
-    </div>
-    <div id="generic-modal-body" style="display:flex; flex-direction:column; gap:8px;"></div>
   </div>
 </div>
 
@@ -206,7 +212,6 @@
 
   <!-- STATIC UPPER DOCK -->
   <div id="static-upper-dock">
-    <!-- Above yellow dotted line: Always visible on both pre-login and post-login pages -->
     <div class="status-bar">
       <div class="ledger-header-brand">LEDGER // MASTER SECURE TERMINAL</div>
       <div>NET: <span id="net-status-tag" class="blink">CHECKING...</span></div>
@@ -215,10 +220,9 @@
     </div>
     <div class="status-bar-divider"></div>
 
-    <!-- Below yellow dotted line: 7 navigation bars, message, and search directory appear ONLY post-login -->
     <div class="post-login-controls" id="post-login-controls">
       <div class="mid-action-bar" id="mid-action-bar">
-        <button class="btn-msg" onclick="openChatModal(); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="msg-badge" style="display:inline-block; position:static; margin-left:4px;">0</span></button>
+        <button class="btn-msg" onclick="showPage('page-chat'); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="badge" style="display:none; position:static; margin-left:4px;">0</span></button>
         <button onclick="openSearchModal(); flashButton(this);">🔍 SEARCH DIRECTORY</button>
       </div>
 
@@ -227,7 +231,7 @@
         <button class="nav-btn" onclick="showPage('page-acc'); flashButton(this);">2.ACCOUNTS</button>
         <button class="nav-btn" onclick="showPage('page-teller'); flashButton(this);">3.TELLER</button>
         <button class="nav-btn" onclick="showPage('page-passbook'); flashButton(this);">4.PASSBOOK</button>
-        <button class="nav-btn" onclick="openChatModal(); flashButton(this);">5.CHAT</button>
+        <button class="nav-btn" onclick="showPage('page-chat'); flashButton(this);">5.CHAT</button>
         <button class="nav-btn" onclick="showPage('page-audit'); flashButton(this);">6.AUDIT</button>
         <button class="nav-btn" id="btn-section-7" onclick="showPage('page-section-7'); flashButton(this);">7.ADMIN</button>
       </nav>
@@ -275,9 +279,8 @@
             <div id="reg-phone-warning" style="font-size:0.55rem; color:var(--accent-red); display:none;">EXACT 10 DIGITS REQUIRED.</div>
           </div>
           <div>
-            <label class="dim" style="font-size:0.75rem;">CREATE PIN (AS PER OWNER RULE):</label>
+            <label class="dim" style="font-size:0.75rem;">CREATE PIN:</label>
             <input type="password" id="reg-pin" placeholder="PIN" value="" required style="font-size: 0.9rem; padding: 8px;" oninput="validatePinInput(this)" />
-            <div id="reg-pin-hint" style="font-size: 0.6rem; color: var(--yellow); margin-top: 4px;">RULE (SET BY OWNER): DYNAMIC HINT.</div>
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">ASSIGN ROLE:</label>
@@ -285,20 +288,23 @@
               <option value="ADMIN" selected>ROLE: ADMIN</option>
               <option value="OPERATOR">ROLE: OPERATOR</option>
               <option value="SUBSCRIBER_TENANT">ROLE: INDEPENDENT CUSTOMER</option>
-              <option value="GENERAL_USER">ROLE: GENERAL USER</option>
             </select>
           </div>
           <div>
-            <label class="dim" style="font-size:0.75rem;">EMAIL ADDRESS (OPTIONAL / FOR OTP):</label>
+            <label class="dim" style="font-size:0.75rem;">EMAIL ADDRESS (OPTIONAL):</label>
             <input type="text" id="reg-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this)" style="font-size: 0.9rem; padding: 8px;" />
-            <div id="email-warning" style="font-size:0.6rem; color:var(--accent-red); display:none; margin-top:2px;">WARNING: INVALID EMAIL FORMAT.</div>
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">REGISTRATION MODE:</label>
-            <select id="reg-mode" style="font-size: 0.9rem; padding: 8px;">
+            <select id="reg-mode" style="font-size: 0.9rem; padding: 8px;" onchange="onRegModeChange()">
               <option value="DIRECT" selected>DIRECT (WITHOUT OTP)</option>
               <option value="EMAIL_OTP">VERIFY VIA EMAIL OTP</option>
             </select>
+          </div>
+
+          <div id="reg-otp-verify-container" style="display:none; border: 1px dashed var(--yellow); padding: 8px; margin-top: 4px;">
+            <label class="dim" style="font-size:0.75rem; color:var(--yellow);">ENTER 6-DIGIT EMAIL OTP:</label>
+            <input type="text" id="reg-otp-input" placeholder="ENTER OTP CODE" maxlength="6" inputmode="numeric" style="font-size: 0.9rem; padding: 8px; margin-top: 4px;" />
           </div>
 
           <button type="submit" class="btn-green" onclick="flashButton(this)" style="padding: 10px; margin-top: 6px;">[ SUBMIT REGISTRATION ]</button>
@@ -307,7 +313,6 @@
         <div style="margin-top: 10px; border-top: 1px dashed var(--fg); padding-top: 8px;">
           <button type="button" class="inverted" onclick="openStatusPopupModal(); flashButton(this);" style="width: 100%; padding: 8px;">[ VIEW REQUEST STATUS (TRACK REF ID) ]</button>
         </div>
-
       </div>
 
       <!-- Recovery Box -->
@@ -330,7 +335,6 @@
           <div>
             <label class="dim" style="font-size:0.75rem;">VERIFIED MOBILE NO (10 DIGITS):</label>
             <input type="tel" id="rec-phone" inputmode="numeric" placeholder="10-DIGIT MOBILE" maxlength="10" required style="font-size: 0.9rem; padding: 8px;" oninput="validateMobileInput(this)" />
-            <div id="rec-phone-warning" style="font-size:0.55rem; color:var(--accent-red); display:none;">EXACT 10 DIGITS REQUIRED.</div>
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">DETAILS / REASON:</label>
@@ -341,6 +345,7 @@
       </div>
     </div>
 
+    <!-- Dash Page -->
     <div class="view-page" id="page-dash">
       <div class="grid-3">
         <div class="box"><div class="box-title">DEPOSITS (CR)</div><div class="stat-val" id="val-dep">0.00</div></div>
@@ -349,6 +354,7 @@
       </div>
     </div>
 
+    <!-- Accounts Page -->
     <div class="view-page" id="page-acc">
       <div class="box">
         <div class="box-title">ACCOUNTS MANAGEMENT DESK</div>
@@ -388,7 +394,6 @@
             </div>
             <div class="grid-3">
               <input type="text" id="acc-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this); autoJump(this, 'acc-address');" />
-              <div id="acc-email-warning" style="font-size:0.55rem; color:var(--accent-red); display:none;">INVALID EMAIL.</div>
               <select id="acc-sms"><option value="OFF" selected>SMS ALERTS: OFF</option><option value="ON">SMS ALERTS: ON</option></select>
               <select id="acc-auth-mode" onchange="toggleAccountOtpBox()"><option value="DIRECT">CREATE WITHOUT OTP</option><option value="OTP">VERIFY VIA OTP</option></select>
             </div>
@@ -427,7 +432,7 @@
           <div class="print-receipt-header" id="print-header-page-acc"></div>
           <div class="table-container">
             <table>
-              <thead><tr><th>11-DIGIT ACC</th><th>HOLDER & DETAILS</th><th>CONTACT & SMS</th><th>BAL</th><th>ACTION</th></tr></thead>
+              <thead><tr><th>ACC NO</th><th>HOLDER & DETAILS</th><th>CONTACT</th><th>BAL</th><th>ACTION</th></tr></thead>
               <tbody id="body-accs"><tr><td colspan="5" style="text-align:center;">CLICK 'LOAD ALL' TO FETCH RECORDS</td></tr></tbody>
             </table>
           </div>
@@ -436,6 +441,7 @@
       </div>
     </div>
 
+    <!-- Teller Page -->
     <div class="view-page" id="page-teller">
       <div class="box">
         <div class="box-title">TRANSACTION CLEARING DESK</div>
@@ -450,11 +456,12 @@
             <select id="tx-type"><option value="CR">CREDIT (CR)</option><option value="DR">DEBIT (DR)</option></select>
             <input type="text" id="tx-ref" placeholder="PARTICULARS / DESCRIPTION" required />
           </div>
-          <button type="submit" class="inverted" onclick="flashButton(this)">[ PROCESS TRANSACTION (NO PIN NEEDED) ]</button>
+          <button type="submit" class="inverted" onclick="flashButton(this)">[ PROCESS TRANSACTION ]</button>
         </form>
       </div>
     </div>
 
+    <!-- Passbook Page -->
     <div class="view-page" id="page-passbook">
       <div class="box">
         <div class="box-title">
@@ -494,7 +501,26 @@
       </div>
     </div>
 
-    <!-- SECTION 7 (DYNAMIC ROLE-BASED ADMIN / SUBSCRIBER / USER CONTROL WITH SIGN OUT) -->
+    <!-- Chat Page (Section 5) -->
+    <div class="view-page" id="page-chat">
+      <div class="box" style="height: 75vh; display: flex; flex-direction: column; gap: 8px; position: relative;">
+        <div class="box-title">
+          <span>INTERNAL SECURE CHAT DESK</span> 
+          <span class="dim">CONNECTED</span>
+        </div>
+        
+        <div class="chat-box" id="chatBox">
+          <div class="chat-msg"><span>System:</span> Welcome to secure terminal chat.</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 4px;">
+          <input type="text" class="form-input autofocus-target" id="chatInput" placeholder="TYPE MESSAGE..." onkeypress="handleChatEnter(event)" style="font-size: 1rem; padding: 10px;" />
+        </div>
+        <button type="button" class="submit-btn inverted" onclick="sendChatMessage(); flashButton(this);" style="padding: 10px;">[ SEND MESSAGE ]</button>
+      </div>
+    </div>
+
+    <!-- SECTION 7 (ADMIN DESK) -->
     <div class="view-page" id="page-section-7">
       <div class="box" id="section-7-container">
         <div class="box-title"><span id="section-7-title">ADMINISTRATION & MASTER CONTROL</span></div>
@@ -689,13 +715,23 @@
             <button class="inverted" onclick="adminRecoverChats(); flashButton(this);">[ ADMIN RECOVER PURGED CHATS (60-DAY) ]</button>
           </div>
           <div class="table-container">
-            <table><thead><tr><th>USER ID</th><th>ROLE / STATUS</th><th>ADMIN ACTIONS</th></tr></thead><tbody id="body-personnel-admin"></tbody></table>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 25%;">USER ID</th>
+                  <th style="width: 45%;">ROLE / STATUS</th>
+                  <th style="width: 30%;">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="body-personnel-admin"></tbody>
+            </table>
           </div>
         </div>
 
       </div>
     </div>
 
+    <!-- Audit Page -->
     <div class="view-page" id="page-audit">
       <div class="box">
         <div class="box-title">
@@ -712,7 +748,20 @@
         </div>
         <div class="print-receipt-header" id="print-header-page-audit"></div>
         <div class="table-container">
-          <table><thead><tr><th>SEQ</th><th>REF ID</th><th class="print-col-date">DATE</th><th class="print-col-time">TIME</th><th>ACC NO</th><th>TYP</th><th class="print-col-desc">AMT / PARTICULAR</th><th>OPERATOR</th></tr></thead><tbody id="body-journal"></tbody></table>
+          <table>
+            <thead>
+              <tr>
+                <th>SEQ</th>
+                <th>REF ID</th>
+                <th>DATE/TIME</th>
+                <th>ACC NO</th>
+                <th>TYP</th>
+                <th>AMT / PARTICULAR</th>
+                <th>OPERATOR</th>
+              </tr>
+            </thead>
+            <tbody id="body-journal"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -728,9 +777,11 @@ let smsPermissionGranted = false;
 let currentClientIP = 'OFFLINE (PENDING)';
 let deviceFingerprint = '';
 let isSyncing = false;
+let session = null;
 
 let pendingRegOtpCode = null;
 let pendingRegData = null;
+let isVerifyingOtp = false;
 
 const SUPABASE_URL = 'https://anwwhrtszdrjdmdrtvoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFud3docnzsZmdyamRydHZvaSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzg5NTY4MDg4LCJleHAiOjIxMDUxNDQwODh9.DJb9igB0QftEZucScZsBnggUPK0-7Syjw9PLCUMFmqM';
@@ -739,7 +790,6 @@ if (window.supabase) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-// --- HARD CLIENT-SIDE ENCRYPTION LAYER WITH V3 SCHEMA COMPATIBILITY ---
 let cryptoKeyCache = null;
 async function getCryptoKey(passphrase = "LEDGER_SECURE_MASTER_KEY") {
   if (cryptoKeyCache) return cryptoKeyCache;
@@ -808,7 +858,10 @@ async function fetchClientIP() {
     return currentClientIP;
   }
   try {
-    const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store', signal: controller.signal });
+    clearTimeout(timeoutId);
     const data = await res.json();
     currentClientIP = data.ip;
   } catch(e) {
@@ -818,7 +871,7 @@ async function fetchClientIP() {
 }
 
 let db = { 
-  version: 11,
+  version: 17,
   users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', lastIp: '127.0.0.1', phone: '0000000000', deviceFp: deviceFingerprint, lastActive: Date.now() }], 
   accounts: [], 
   ledger: [], 
@@ -850,7 +903,6 @@ function flashButton(btn) {
   }, 200);
 }
 
-// STRICT MOBILE NUMBER VALIDATOR
 function validateMobileInput(inputElem) {
   const val = inputElem.value.replace(/[^0-9]/g, '');
   inputElem.value = val;
@@ -864,7 +916,6 @@ function validateMobileInput(inputElem) {
   }
 }
 
-// DYNAMIC PIN VALIDATOR SHOWING OWNER'S SET RULE
 function validatePinInput(inputElem) {
   const rule = db.settings.passwordRule || 'MIXED_CHAR';
   const val = inputElem.value;
@@ -896,7 +947,6 @@ function validatePinInput(inputElem) {
   hintBox.style.color = valid ? 'var(--accent-green)' : 'var(--accent-red)';
 }
 
-// 10-CHARACTER REF ID COMBINATION OF ALPHA, NUM, UPPER, LOWER, SPECIAL
 async function generateTenCharRefId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let result = '';
@@ -1044,26 +1094,6 @@ function executeInterestCalculation() {
 
   save();
   alert(`INTEREST APPLIED SUCCESSFULLY TO ${appliedCount} ACCOUNT(S) USING ${type} MODEL.`);
-}
-
-function addNewCustomTxType() {
-  const codeInput = document.getElementById('new-tx-type-code');
-  const ruleSelect = document.getElementById('new-tx-type-rule');
-  const code = codeInput.value.trim().toUpperCase();
-  const rule = ruleSelect.value;
-  if(!code) return;
-
-  if(!db.customTxTypes) db.customTxTypes = ['CR', 'DR'];
-  if(!db.txRules) db.txRules = { CR: 'ADD', DR: 'SUB' };
-
-  if(!db.customTxTypes.includes(code)) {
-    db.customTxTypes.push(code);
-  }
-  db.txRules[code] = rule;
-  save();
-  updateTxTypeDropdowns();
-  alert(`TRANSACTION TYPE '${code}' WITH RULE '${rule}' CREATED SUCCESSFULLY.`);
-  codeInput.value = '';
 }
 
 function updatePasswordRuleSetting() {
@@ -1247,9 +1277,9 @@ async function init() {
           u.lastActive = Date.now();
           setTimeout(() => {
             document.getElementById('session-tag').innerText = `${u.id} [${u.role}]`;
-            document.getElementById('post-login-controls').style.display = 'flex'; // Reveal post-login controls (7 nav bars, messages, search)
+            document.getElementById('post-login-controls').style.display = 'flex';
             configureSection7ForRole(u);
-            showPage('page-dash');
+            showPage('page-dash'); 
             syncUI();
           }, 50);
         } else { session = null; localStorage.removeItem(DB_KEY + '_SESSION'); }
@@ -1259,8 +1289,11 @@ async function init() {
   if (session) {
     session.lastActive = Date.now();
     syncUI();
-    document.getElementById('post-login-controls').style.display = 'flex'; // Reveal post-login controls
+    document.getElementById('post-login-controls').style.display = 'flex';
     configureSection7ForRole(session);
+    showPage('page-dash');
+  } else {
+    showPage('page-login');
   }
   setInterval(() => { backgroundSync(false); }, 3000);
 }
@@ -1299,7 +1332,7 @@ function configureSection7ForRole(u) {
     desc.innerText = 'SELECT AN ADMINISTRATIVE OR USER MODULE BELOW:';
     adminGrid.style.display = 'grid';
     userProfile.style.display = 'none';
-    navBtn7.innerText = '7.OWNER';
+    navBtn7.innerText = '7.ADMIN';
     if(workspaceBadge) workspaceBadge.innerText = 'SUPREME OWNER MODE';
   } else if (u.role === 'ADMIN') {
     title.innerText = 'ADMINISTRATION DESK';
@@ -1312,7 +1345,7 @@ function configureSection7ForRole(u) {
     desc.innerText = 'YOUR ISOLATED WORKSPACE MANAGEMENT:';
     adminGrid.style.display = 'none';
     userProfile.style.display = 'block';
-    navBtn7.innerText = '7.SUB';
+    navBtn7.innerText = '7.ADMIN';
     if(workspaceBadge) workspaceBadge.innerText = 'LOCAL WORKSPACE OWNER';
     populateUserProfile(u);
   } else {
@@ -1320,7 +1353,7 @@ function configureSection7ForRole(u) {
     desc.innerText = 'USER ACCOUNT & SESSION MANAGEMENT:';
     adminGrid.style.display = 'none';
     userProfile.style.display = 'block';
-    navBtn7.innerText = '7.USR';
+    navBtn7.innerText = '7.ADMIN';
     if(workspaceBadge) workspaceBadge.innerText = 'STANDARD USER MODE';
     populateUserProfile(u);
   }
@@ -1338,30 +1371,29 @@ function showPage(id) {
   closeAdminSubPanels();
   document.querySelectorAll('.view-page').forEach(e=>e.style.display='none');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active-main-tab'));
-  document.getElementById(id).style.display='flex';
   
-  const map={'page-dash':0,'page-acc':1,'page-teller':2,'page-passbook':3,'page-chat':4,'page-audit':5,'page-section-7':6};
-  if(map[id]!==undefined) {
-    const activeTab = document.querySelectorAll('.nav-btn')[map[id]];
-    if(activeTab) activeTab.classList.add('active-main-tab');
+  const targetPage = document.getElementById(id);
+  if(targetPage) targetPage.style.display='flex';
+  
+  const map={'page-dash':'1','page-acc':'2','page-teller':'3','page-passbook':'4','page-chat':'5','page-audit':'6','page-section-7':'7'};
+  const btnId = map[id];
+  if(btnId) {
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => {
+      if(btn.textContent.includes(btnId + '.')) {
+        btn.classList.add('active-main-tab');
+      }
+    });
   }
   
   document.querySelectorAll('.box').forEach(b => b.classList.remove('active-working-section'));
   const activePageBox = document.querySelector('#' + id + ' > .box');
   if(activePageBox) activePageBox.classList.add('active-working-section');
 
-  const targetPageElem = document.getElementById(id);
-  if(targetPageElem) {
-    const rect = targetPageElem.getBoundingClientRect();
-    if (rect.bottom > window.innerHeight) {
-      targetPageElem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }
-
   focusFirstInputInPage(id);
 
-  if(id==='page-admin' || id==='page-section-7') { renderAdmin(); generateReport(); }
-  if(id==='page-chat') { renderChat(); markMessagesRead(); }
+  if(id==='page-section-7') { renderAdmin(); generateReport(); }
+  if(id==='page-chat') { renderModalChat(); markMessagesRead(); }
 }
 
 function openAccountSubPanel(panelId, btnElement) {
@@ -1409,6 +1441,7 @@ function toggleLoginAction(mode) {
   const loginBox = document.getElementById('login-box');
   const regBox = document.getElementById('reg-box');
   const recoverBox = document.getElementById('recover-box');
+  if(!loginBox) return;
   loginBox.style.display = 'none'; regBox.style.display = 'none'; recoverBox.style.display = 'none';
   if (mode === 'login') {
     loginBox.style.display = 'block';
@@ -1451,7 +1484,7 @@ async function handleLogon(e) {
     session=u; save();
     showTaskFeedback('login-task-feedback', 'SUCCESS', `Logged in as ${u.id} [${u.role}]`);
     document.getElementById('session-tag').innerText=`${u.id} [${u.role}]`;
-    document.getElementById('post-login-controls').style.display = 'flex'; // Reveal post-login controls (7 nav bars, messages, search)
+    document.getElementById('post-login-controls').style.display = 'flex';
     configureSection7ForRole(u);
     setTimeout(() => { showPage('page-dash'); syncUI(); }, 600);
   }, 400);
@@ -1468,100 +1501,6 @@ function closeStatusPopupModal() {
   document.getElementById('status-popup-modal').style.display = 'none';
 }
 
-function openChatModal() {
-  const chatBody = `
-    <div class="box" style="height: 65vh; display: flex; flex-direction: column; gap: 8px; position: relative; background: #000;">
-      <div class="box-title"><span>SECURE USER CHAT DESK</span> <span class="dim">CONNECTED</span></div>
-      <div class="grid-3" style="font-size:0.7rem; align-items:center;">
-        <div>
-          <label class="dim">SEND TO BY:</label>
-          <select id="modal-chat-recipient-type" onchange="onModalChatRecipientTypeChange()">
-            <option value="MOBILE" selected>MOBILE NUMBER</option>
-            <option value="ACC">ACC NUMBER</option>
-            <option value="NAME">HOLDER NAME</option>
-          </select>
-        </div>
-        <div style="grid-column: span 2;">
-          <label class="dim">RECIPIENT TARGET & IDENTIFY:</label>
-          <input type="text" id="modal-chat-recipient-target" inputmode="numeric" placeholder="ENTER 10-DIGIT MOBILE..." oninput="identifyModalChatRecipient()" />
-        </div>
-      </div>
-      <div style="font-size:0.65rem; color: var(--accent-blue);" id="modal-chat-recipient-resolved">TARGET: BROADCAST / ALL OPERATORS</div>
-      <div style="flex: 1; overflow-y: auto; border: 1px dashed var(--dim); padding: 8px; display: flex; flex-direction: column; gap: 6px;" id="modal-chat-messages-container">
-        <div style="text-align: center; color: var(--dim); font-size: 0.7rem;">START A SECURE CONVERSATION</div>
-      </div>
-      <form onsubmit="sendModalChatMessage(event)" style="display: flex; gap: 6px; background: var(--bg); padding-top: 6px; border-top: 1px solid var(--fg);">
-        <input type="text" id="modal-chat-input-msg" placeholder="TYPE MULTI-RECIPIENT MESSAGE..." required autocomplete="off" style="flex: 1; font-size: 1rem; padding: 10px;" />
-        <button type="submit" class="inverted" onclick="flashButton(this)" style="font-size: 1rem; padding: 10px 16px;">[ SEND ]</button>
-      </form>
-    </div>
-  `;
-  document.getElementById('generic-modal-title').innerText = 'SECURE CHAT DESK';
-  document.getElementById('generic-modal-body').innerHTML = chatBody;
-  document.getElementById('generic-centered-modal').style.display = 'flex';
-  renderModalChat();
-}
-
-function onModalChatRecipientTypeChange() {
-  const type = document.getElementById('modal-chat-recipient-type').value;
-  const targetInput = document.getElementById('modal-chat-recipient-target');
-  targetInput.value = '';
-  if (type === 'NAME') {
-    targetInput.removeAttribute('inputmode');
-    targetInput.placeholder = "ENTER HOLDER NAME(S)...";
-  } else {
-    targetInput.setAttribute('inputmode', 'numeric');
-    targetInput.placeholder = type === 'MOBILE' ? "E.G. 9876543210" : "E.G. 10000000001";
-  }
-}
-
-function identifyModalChatRecipient() {
-  const targetInput = document.getElementById('modal-chat-recipient-target');
-  const val = targetInput.value.trim().toUpperCase();
-  const resolvedLabel = document.getElementById('modal-chat-recipient-resolved');
-  if(!val) { resolvedLabel.innerText = 'TARGET: BROADCAST / ALL OPERATORS'; return; }
-  resolvedLabel.innerText = `TARGET RESOLVED MULTI-RECIPIENT: ${val}`;
-  resolvedLabel.style.color = 'var(--accent-green)';
-}
-
-async function sendModalChatMessage(e) {
-  e.preventDefault();
-  const input = document.getElementById('modal-chat-input-msg');
-  const msgText = input.value.trim();
-  const targetVal = document.getElementById('modal-chat-recipient-target').value.trim().toUpperCase();
-  if(!msgText || !session) return;
-
-  if(!db.chats) db.chats = [];
-  db.chats.push({
-    sender: session.id,
-    recipient: targetVal || 'BROADCAST',
-    text: await encryptData(msgText),
-    time: new Date().toLocaleTimeString(),
-    timestamp: Date.now(),
-    read: false
-  });
-  save();
-  input.value = '';
-  renderModalChat();
-}
-
-async function renderModalChat() {
-  cleanupChatsLifecycle();
-  const container = document.getElementById('modal-chat-messages-container');
-  if(!container) return;
-  container.innerHTML = '';
-  if(!db.chats || !db.chats.length) {
-    container.innerHTML = '<div style="text-align: center; color: var(--dim); font-size: 0.7rem;">NO MESSAGES</div>';
-    return;
-  }
-  for (let c of db.chats) {
-    const isMe = session && c.sender === session.id;
-    const plainText = await decryptData(c.text);
-    container.innerHTML += `<div style="background: ${isMe ? '#222' : '#111'}; border: 1px solid ${isMe ? 'var(--fg)' : 'var(--dim)'}; padding: 6px; border-radius: 4px; max-width: 80%; align-self: ${isMe ? 'flex-end' : 'flex-start'};"><div style="font-size: 0.6rem; color: var(--dim); margin-bottom: 2px;">FROM: ${c.sender} -> TO: ${c.recipient} @ ${c.time}</div><div style="font-size: 0.75rem;">${plainText}</div></div>`;
-  }
-  container.scrollTop = container.scrollHeight;
-}
-
 function updateRegistrationRoleDropdown() {
   const sel = document.getElementById('reg-role-type');
   if(!sel) return;
@@ -1569,12 +1508,22 @@ function updateRegistrationRoleDropdown() {
     <option value="ADMIN" selected>ROLE: ADMIN</option>
     <option value="OPERATOR">ROLE: OPERATOR</option>
     <option value="SUBSCRIBER_TENANT">ROLE: INDEPENDENT CUSTOMER</option>
-    <option value="GENERAL_USER">ROLE: GENERAL USER</option>
   `;
   if(db.customRoles) {
     db.customRoles.forEach(r => {
       sel.innerHTML += `<option value="${r.name}">${r.name}</option>`;
     });
+  }
+}
+
+function onRegModeChange() {
+  const mode = document.getElementById('reg-mode').value;
+  const otpContainer = document.getElementById('reg-otp-verify-container');
+  if (mode === 'EMAIL_OTP') {
+    otpContainer.style.display = 'block';
+  } else {
+    otpContainer.style.display = 'none';
+    isVerifyingOtp = false;
   }
 }
 
@@ -1616,20 +1565,31 @@ async function handleUserRegistration(e) {
 
   const generatedUserId = 'USR-' + tenCharRef.refId.slice(0, 6).toUpperCase();
 
-  if (mode === 'EMAIL_OTP') {
+  if (mode === 'EMAIL_OTP' && !isVerifyingOtp) {
     pendingRegOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
     pendingRegData = { id: generatedUserId, name, pin, phone, role, email, refId: tenCharRef.refId, ip: tenCharRef.ip };
     if (email) {
       await sendNotificationEmail(email, "LEDGER: Registration Verification Code", `Hello ${name},\n\nYour User ID is: ${generatedUserId}\nYour 10-char Ref ID is: ${tenCharRef.refId}\n\nOTP Code: ${pendingRegOtpCode}`);
     }
-    showTaskFeedback('reg-task-feedback', 'SUCCESS', `OTP sent. USER ID: ${generatedUserId} | REF ID: ${tenCharRef.refId}. DONT SHARE IT WITH ANYONE!`);
+    document.getElementById('reg-otp-verify-container').style.display = 'block';
+    showTaskFeedback('reg-task-feedback', 'SUCCESS', `OTP sent to email. Enter 6-digit OTP code below. (Demo OTP: ${pendingRegOtpCode})`);
+    isVerifyingOtp = true;
     return;
+  }
+
+  if (isVerifyingOtp) {
+    const enteredOtp = document.getElementById('reg-otp-input').value.trim();
+    if (enteredOtp !== pendingRegOtpCode) {
+      showTaskFeedback('reg-task-feedback', 'DECLINED', 'INVALID OTP CODE.');
+      return;
+    }
   }
 
   db.users.push({ id: generatedUserId, name, pin, role, status: 'ACTIVE', lastIp: tenCharRef.ip, phone, email, deviceFp: deviceFingerprint, refId: tenCharRef.refId, lastActive: Date.now() });
   
   db.ledger.unshift({ seq: db.ledger.length+1, refId: tenCharRef.refId, date: tenCharRef.date, time: tenCharRef.time, ip: tenCharRef.ip, accNo: 'SYSTEM', type: 'REG', amount: 0, operator: generatedUserId, narrative: `NEW USER REGISTERED [REF: ${tenCharRef.refId}]` });
   save();
+  isVerifyingOtp = false;
 
   showTaskFeedback('reg-task-feedback', 'SUCCESS', `SUCCESS! USER ID: ${generatedUserId} | 10-CHAR REF ID: ${tenCharRef.refId}. DONT SHARE IT WITH ANYONE!`);
 }
@@ -1687,10 +1647,6 @@ async function handleRecoverySubmission(e) {
   e.target.reset();
 }
 
-async function handlePasswordRecoveryRequest(e) {
-  e.preventDefault();
-}
-
 async function adminCreateUser(e) {
   e.preventDefault();
   showLoadingFeedback('admin-create-task-feedback');
@@ -1711,7 +1667,7 @@ async function adminCreateUser(e) {
 function confirmSignOut() { if (confirm("DO YOU WANT TO SIGN OUT?")) logout(); }
 function logout() { 
   session=null; localStorage.removeItem(DB_KEY + '_SESSION');
-  document.getElementById('post-login-controls').style.display='none'; // Hide post-login controls on sign out
+  document.getElementById('post-login-controls').style.display='none';
   document.getElementById('session-tag').innerText='DISCONNECTED'; toggleLoginAction('login'); showPage('page-login'); 
 }
 
@@ -1822,7 +1778,20 @@ async function loadAccountDirectory() {
   for (let a of db.accounts) {
     const isLocked = a.status === 'LOCKED';
     const plainName = await decryptData(a.holderName);
-    ab.innerHTML += `<tr><td class="bold">${a.accountNumber}<br><span class="dim" style="font-size:0.6rem;">REF: ${a.refId || 'N/A'}</span></td><td><strong>${plainName}</strong><br><span class="dim">STATUS: ${a.status || 'APPROVED'}</span></td><td class="dim">PH: ${a.phone}</td><td class="bold">${a.balance.toFixed(2)}</td><td><button onclick="openEditAcc('${a.accountNumber}'); flashButton(this);" style="padding:2px 6px; font-size:0.65rem;">EDIT</button><button onclick="toggleLockAccount('${a.accountNumber}'); flashButton(this);" style="padding:2px 6px; font-size:0.65rem; color:${isLocked?'#0f0':'#ff0'}">${isLocked?'UNLOCK':'LOCK'}</button><button onclick="adminTransferPrompt('${a.accountNumber}')" style="padding:2px 6px; font-size:0.65rem; color:#58a6ff;">XFER</button><button onclick="deleteAccountAdmin('${a.accountNumber}')" style="padding:2px 6px; font-size:0.65rem; color:#ff4444;">DEL</button></td></tr>`;
+    ab.innerHTML += `<tr>
+      <td class="bold">${a.accountNumber}<br><span class="dim" style="font-size:0.55rem;">REF: ${a.refId || 'N/A'}</span></td>
+      <td><strong>${plainName}</strong><br><span class="dim" style="font-size:0.55rem;">STATUS: ${a.status || 'APPROVED'}</span></td>
+      <td class="dim" style="font-size:0.6rem;">${a.phone}</td>
+      <td class="bold">${a.balance.toFixed(2)}</td>
+      <td>
+        <div style="display:flex; gap:2px;">
+          <button onclick="openEditAcc('${a.accountNumber}'); flashButton(this);" style="padding:2px 3px; font-size:0.55rem;">EDT</button>
+          <button onclick="toggleLockAccount('${a.accountNumber}'); flashButton(this);" style="padding:2px 3px; font-size:0.55rem; color:${isLocked?'#0f0':'#ff0'}">${isLocked?'UNL':'LCK'}</button>
+          <button onclick="adminTransferPrompt('${a.accountNumber}')" style="padding:2px 3px; font-size:0.55rem; color:#58a6ff;">XFR</button>
+          <button onclick="deleteAccountAdmin('${a.accountNumber}')" style="padding:2px 3px; font-size:0.55rem; color:#ff4444;">DEL</button>
+        </div>
+      </td>
+    </tr>`;
   }
 }
 
@@ -1963,31 +1932,63 @@ function handlePassbookKeyDown(e) {
   }
 }
 
+// =========================================================================
+// CUSTOM STRUCTURED PDF EXPORT GENERATORS (App Name Top, Details, Seq, Time Bottom)
+// =========================================================================
 async function exportPassbookPdf() {
   const accNo = document.getElementById('pb-acc-input').value.trim();
   const acc = db.accounts.find(a => a.accountNumber === accNo);
   if (!acc) { alert("PLEASE ENTER A VALID ACCOUNT NUMBER FIRST."); return; }
   const plainName = await decryptData(acc.holderName);
+  const printTimestamp = new Date().toLocaleString();
   
-  let content = `LEDGER STATEMENT // ACCOUNT: ${accNo}\nHOLDER: ${plainName}\nBALANCE: ₹${acc.balance.toFixed(2)}\nDATE: ${new Date().toLocaleString()}\n----------------------------------------\n`;
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: ACCOUNT PASSBOOK STATEMENT\n`;
+  content += `ACCOUNT NO : ${accNo}\n`;
+  content += `HOLDER NAME: ${plainName}\n`;
+  content += `MOBILE NO  : ${acc.phone}\n`;
+  content += `CLEAR BAL  : ₹${acc.balance.toFixed(2)}\n`;
+  content += `----------------------------------------\n`;
+  content += `DATE & TIME | TYPE | PARTICULARS | AMOUNT\n`;
+  content += `----------------------------------------\n`;
+
   db.ledger.filter(l => l.accNo === accNo).forEach(l => {
-    content += `[${l.date} ${l.time}] ${l.type}: ₹${l.amount || 0} - ${l.narrative}\n`;
+    content += `${l.date} ${l.time} | ${l.type} | ${l.narrative} | ₹${l.amount || 0}\n`;
   });
 
-  downloadTextAsFile(content, `PASSBOOK_${accNo}.pdf`);
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT: ${printTimestamp}\n`;
+  content += `========================================\n`;
+
+  downloadTextAsFile(content, `PASSBOOK_${accNo}.txt`);
 }
 
 async function exportAuditPdf() {
-  let content = `IMMUTABLE AUDIT JOURNAL REPORT // GENERATED: ${new Date().toLocaleString()}\n----------------------------------------\n`;
+  const printTimestamp = new Date().toLocaleString();
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: IMMUTABLE AUDIT JOURNAL\n`;
+  content += `----------------------------------------\n`;
+  content += `REF ID     | DATE/TIME | A/C NO | TYP | AMT / PURPOSE\n`;
+  content += `----------------------------------------\n`;
+
   db.ledger.slice(0, 100).forEach(l => {
-    content += `[${l.date} ${l.time}] REF: ${l.refId} | A/C: ${l.accNo} | TYP: ${l.type} | AMT: ${l.amount} | ${l.narrative} | OPR: ${l.operator}\n`;
+    content += `${l.refId || 'N/A'} | ${l.date} ${l.time} | ${l.accNo} | ${l.type} | ₹${l.amount || 0} - ${l.narrative}\n`;
   });
-  downloadTextAsFile(content, `AUDIT_JOURNAL_${new Date().toISOString().slice(0,10)}.pdf`);
+
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT: ${printTimestamp}\n`;
+  content += `========================================\n`;
+
+  downloadTextAsFile(content, `AUDIT_JOURNAL_${new Date().toISOString().slice(0,10)}.txt`);
 }
 
 function downloadTextAsFile(text, filename) {
   try {
-    const blob = new Blob([text], { type: 'application/pdf' });
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -2049,17 +2050,18 @@ function renderAdmin() {
         <tr>
           <td class="bold">${u.id}</td>
           <td>
-            ROLE: <select onchange="updateUserRole('${u.id}', this.value)" ${isMasterOwner?'disabled':''}>
+            ROLE: <select onchange="updateUserRole('${u.id}', this.value)" ${isMasterOwner?'disabled':''} style="font-size:0.65rem; padding:2px;">
               <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
               <option value="OPERATOR" ${u.role==='OPERATOR'?'selected':''}>OPERATOR</option>
               <option value="SUBSCRIBER_TENANT" ${u.role==='SUBSCRIBER_TENANT'?'selected':''}>SUBSCRIBER</option>
-            </select><br>
-            STATUS: ${u.status}
+            </select><br><span class="dim" style="font-size:0.55rem;">STATUS: ${u.status}</span>
           </td>
           <td>
-            <button onclick="toggleLockUser('${u.id}'); flashButton(this);" style="padding:2px 6px; font-size:0.65rem;" ${isMasterOwner?'disabled':''}>${u.status==='LOCKED'?'UNLOCK':'LOCK'}</button>
-            <button onclick="editUserPrompt('${u.id}')" style="padding:2px 6px; font-size:0.65rem;">EDIT PIN</button>
-            <button onclick="deleteUserAdmin('${u.id}')" style="padding:2px 6px; font-size:0.65rem; color:#ff4444;" ${isMasterOwner?'disabled':''}>DEL</button>
+            <div style="display:flex; gap:2px;">
+              <button onclick="toggleLockUser('${u.id}'); flashButton(this);" style="padding:2px 3px; font-size:0.55rem;" ${isMasterOwner?'disabled':''}>${u.status==='LOCKED'?'UNL':'LCK'}</button>
+              <button onclick="editUserPrompt('${u.id}')" style="padding:2px 3px; font-size:0.55rem;">PIN</button>
+              <button onclick="deleteUserAdmin('${u.id}')" style="padding:2px 3px; font-size:0.55rem; color:#ff4444;" ${isMasterOwner?'disabled':''}>DEL</button>
+            </div>
           </td>
         </tr>`;
     });
@@ -2178,7 +2180,6 @@ function clearAutoFillBoxes() {
   window.lastFetchedAccNo = null;
 }
 
-// STRICT DIGIT RESTRICTION FOR SEARCH FIELD (11 FOR ACC NO, 10 FOR MOBILE)
 function handleSearchAutoInput(e) {
   const c = document.getElementById('search-criteria').value;
   const q = document.getElementById('search-query').value.trim();
@@ -2278,8 +2279,21 @@ async function exportSearchBoxPdf() {
   const acc = db.accounts.find(a => a.accountNumber === window.lastFetchedAccNo);
   if(!acc) return;
   const plainName = await decryptData(acc.holderName);
-  let content = `RECORD INFO PDF // ACCOUNT: ${window.lastFetchedAccNo}\nHOLDER: ${plainName}\nBALANCE: ₹${acc.balance.toFixed(2)}\nMOBILE: ${acc.phone}\nREF ID: ${acc.refId}\nDATE: ${new Date().toLocaleString()}`;
-  downloadTextAsFile(content, `RECORD_${window.lastFetchedAccNo}.pdf`);
+  const printTimestamp = new Date().toLocaleString();
+
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: SEARCH RECORD REPORT\n`;
+  content += `ACCOUNT NO : ${window.lastFetchedAccNo}\n`;
+  content += `HOLDER NAME: ${plainName}\n`;
+  content += `BALANCE    : ₹${acc.balance.toFixed(2)}\nMOBILE     : ${acc.phone}\n`;
+  content += `REF ID     : ${acc.refId || 'N/A'}\n`;
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT : ${printTimestamp}\n`;
+  content += `========================================\n`;
+
+  downloadTextAsFile(content, `RECORD_${window.lastFetchedAccNo}.txt`);
   closeSearchModal();
 }
 
@@ -2295,6 +2309,110 @@ function exportSearchBoxPassbook() {
 }
 
 function useSearch(acc){ closeSearchModal(); showPage('page-teller'); document.getElementById('tx-acc').value=acc; autoFetch(); }
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if(!input) return;
+  const msgText = input.value.trim();
+  if(!msgText || !session) return;
+
+  if(!db.chats) db.chats = [];
+  db.chats.push({
+    sender: session.id,
+    recipient: 'BROADCAST',
+    text: await encryptData(msgText),
+    time: new Date().toLocaleTimeString(),
+    timestamp: Date.now(),
+    read: false
+  });
+  save();
+  input.value = '';
+  renderModalChat();
+}
+
+function handleChatEnter(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+async function renderModalChat() {
+  cleanupChatsLifecycle();
+  const container = document.getElementById('chatBox');
+  if(!container) return;
+  container.innerHTML = '';
+  if(!db.chats || !db.chats.length) {
+    container.innerHTML = '<div style="text-align: center; color: var(--dim); font-size: 0.7rem;">NO MESSAGES YET</div>';
+    return;
+  }
+  for (let c of db.chats) {
+    const isMe = session && c.sender === session.id;
+    const plainText = await decryptData(c.text);
+    container.innerHTML += `<div class="chat-msg"><span>${c.sender}:</span> ${plainText}</div>`;
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function markMessagesRead() {
+  if(!db.chats) return;
+  db.chats.forEach(c => c.read = true);
+  save(); updateUnreadBadge();
+}
+
+function updateUnreadBadge() {
+  const badge = document.getElementById('msg-badge');
+  if(!badge || !db.chats) return;
+  const unreadCount = db.chats.filter(c => !c.read && (!session || c.sender !== session.id)).length;
+  if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
+}
+
+async function syncUI() {
+  let cr=0, dr=0; 
+  const rules = db.txRules || { CR: 'ADD', DR: 'SUB' };
+  for(let l of db.ledger) {
+    const rule = rules[l.type] || 'ADD';
+    if(rule === 'ADD') cr += l.amount; 
+    else if(rule === 'SUB') dr += l.amount; 
+  }
+  const depVal = document.getElementById('val-dep');
+  const withVal = document.getElementById('val-with');
+  const accsVal = document.getElementById('val-accs');
+  if(depVal) depVal.innerText=cr.toFixed(2); 
+  if(withVal) withVal.innerText=dr.toFixed(2); 
+  if(accsVal) accsVal.innerText=db.accounts.length;
+  updateUnreadBadge();
+  
+  for(let acc of db.accounts) {
+    if(acc.holderName && !acc.holderName.startsWith('ENC:')) acc.holderName = await encryptData(acc.holderName);
+  }
+
+  const jb = document.getElementById('body-journal');
+  if(jb) {
+    jb.innerHTML = '';
+    db.ledger.slice(0, 50).forEach(l => {
+      jb.innerHTML += `<tr>
+        <td>${l.seq}</td>
+        <td class="bold">${l.refId || 'N/A'}</td>
+        <td>${l.date || 'N/A'} ${l.time || ''}</td>
+        <td>${l.accNo || 'SYS'}</td>
+        <td>${l.type}</td>
+        <td>${l.amount ? l.amount.toFixed(2) : '0.00'} (${l.narrative})</td>
+        <td class="dim">${l.operator}</td>
+      </tr>`;
+    });
+  }
+}
+
+function togglePrintMeta(pageId) {
+  document.body.classList.toggle('hide-date', !document.getElementById('chk-date-' + pageId)?.checked);
+  document.body.classList.toggle('hide-time', !document.getElementById('chk-time-' + pageId)?.checked);
+  document.body.classList.toggle('hide-desc', !document.getElementById('chk-desc-' + pageId)?.checked);
+}
+
+function triggerPrint(pageId) {
+  window.print();
+}
 
 function updateNet() {
   const tag = document.getElementById('net-status-tag');
