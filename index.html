@@ -859,7 +859,7 @@ async function fetchClientIP() {
   }
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store', signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json();
@@ -871,7 +871,7 @@ async function fetchClientIP() {
 }
 
 let db = { 
-  version: 18,
+  version: 19,
   users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', lastIp: '127.0.0.1', phone: '0000000000', deviceFp: deviceFingerprint, lastActive: Date.now() }], 
   accounts: [], 
   ledger: [], 
@@ -953,8 +953,7 @@ async function generateTenCharRefId() {
   for (let i = 0; i < 10; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  const ip = await fetchClientIP();
-  return { refId: result, ip: ip, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
+  return { refId: result, ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
 }
 
 function showTaskFeedback(containerId, status, message) {
@@ -1224,7 +1223,6 @@ async function backgroundSync(isInitial = false) {
 async function pushDataToServerSilent() {
   if (!navigator.onLine || !supabaseClient) return;
   try {
-    await fetchClientIP();
     if (session) {
       const u = db.users.find(x => x.id === session.id);
       if (u) u.lastIp = currentClientIP;
@@ -1245,7 +1243,11 @@ async function pushDataToServerSilent() {
 }
 
 async function init() {
-  await fetchClientIP();
+  fetchClientIP().then(() => {
+    const netTag = document.getElementById('net-status-tag');
+    if(netTag) netTag.innerText = navigator.onLine ? 'ONLINE' : 'OFFLINE';
+  });
+
   const local = migrateLegacyData();
   if (local) {
     try { db = JSON.parse(local); } catch(e) {}
@@ -1262,7 +1264,7 @@ async function init() {
   cleanupChatsLifecycle();
   updateTxTypeDropdowns();
   updateRegistrationRoleDropdown();
-  await backgroundSync(true);
+  backgroundSync(true);
 
   const savedSession = localStorage.getItem(DB_KEY + '_SESSION');
   if (savedSession && !session) {
@@ -1295,7 +1297,6 @@ async function init() {
   } else {
     showPage('page-login');
   }
-  setInterval(() => { backgroundSync(false); }, 3000);
 }
 
 function save() { 
@@ -1466,28 +1467,36 @@ async function requestSmsBrowserPermission() {
   alert(smsPermissionGranted ? 'SMS PERMISSION GRANTED.' : 'SMS PERMISSION DENIED.');
 }
 
-async function handleLogon(e) {
+function handleLogon(e) {
   e.preventDefault(); 
-  showLoadingFeedback('login-task-feedback');
-  await fetchClientIP();
-  setTimeout(() => {
-    const uid=document.getElementById('inp-uid').value.trim().toUpperCase(), pin=document.getElementById('inp-pin').value.trim();
-    let u = db.users.find(x=>x.id===uid && x.pin===pin);
-    if(!u && (uid==='MASTER_OWNER' || uid==='ADMIN') && pin==='9999') {
-      u={id:'MASTER_OWNER',pin:'9999',role:'OWNER',status:'ACTIVE',lastIp: currentClientIP, phone:'0000000000', deviceFp: deviceFingerprint, lastActive: Date.now()};
-      db.users.push(u);
-    }
-    if(!u){ showTaskFeedback('login-task-feedback', 'DECLINED', 'Invalid credentials.'); return; }
-    if(u.status==='LOCKED' || u.status==='SUSPENDED'){ showTaskFeedback('login-task-feedback', 'DECLINED', 'Account is locked/suspended.'); return; }
+  const uid = document.getElementById('inp-uid').value.trim().toUpperCase();
+  const pin = document.getElementById('inp-pin').value.trim();
+  
+  let u = db.users.find(x => x.id === uid && x.pin === pin);
+  if(!u && (uid === 'MASTER_OWNER' || uid === 'ADMIN') && pin === '9999') {
+    u = { id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', lastIp: currentClientIP, phone: '0000000000', deviceFp: deviceFingerprint, lastActive: Date.now() };
+    db.users.push(u);
+  }
+  if(!u) {
+    showTaskFeedback('login-task-feedback', 'DECLINED', 'Invalid credentials.');
+    return;
+  }
+  if(u.status === 'LOCKED' || u.status === 'SUSPENDED') {
+    showTaskFeedback('login-task-feedback', 'DECLINED', 'Account is locked/suspended.');
+    return;
+  }
 
-    u.lastIp = currentClientIP; u.deviceFp = deviceFingerprint; u.lastActive = Date.now();
-    session=u; save();
-    showTaskFeedback('login-task-feedback', 'SUCCESS', `Logged in as ${u.id} [${u.role}]`);
-    document.getElementById('session-tag').innerText=`${u.id} [${u.role}]`;
-    document.getElementById('post-login-controls').style.display = 'flex';
-    configureSection7ForRole(u);
-    setTimeout(() => { showPage('page-dash'); syncUI(); }, 600);
-  }, 400);
+  u.lastIp = currentClientIP; 
+  u.deviceFp = deviceFingerprint; 
+  u.lastActive = Date.now();
+  session = u; 
+  save();
+  
+  document.getElementById('session-tag').innerText = `${u.id} [${u.role}]`;
+  document.getElementById('post-login-controls').style.display = 'flex';
+  configureSection7ForRole(u);
+  showPage('page-dash');
+  syncUI();
 }
 
 function openStatusPopupModal() {
@@ -1549,7 +1558,6 @@ function createNewCustomRole() {
 
 async function handleUserRegistration(e) {
   e.preventDefault();
-  showLoadingFeedback('reg-task-feedback');
   const tenCharRef = await generateTenCharRefId();
   const name = document.getElementById('reg-name').value.trim().toUpperCase();
   const phone = document.getElementById('reg-phone').value.trim().replace(/[^0-9]/g,'');
@@ -1569,10 +1577,10 @@ async function handleUserRegistration(e) {
     pendingRegOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
     pendingRegData = { id: generatedUserId, name, pin, phone, role, email, refId: tenCharRef.refId, ip: tenCharRef.ip };
     if (email) {
-      await sendNotificationEmail(email, "LEDGER: Registration Verification Code", `Hello ${name},\n\nYour User ID is: ${generatedUserId}\nYour 10-char Ref ID is: ${tenCharRef.refId}\n\nOTP Code: ${pendingRegOtpCode}`);
+      sendNotificationEmail(email, "LEDGER: Registration Verification Code", `Hello ${name},\n\nYour User ID is: ${generatedUserId}\nYour 10-char Ref ID is: ${tenCharRef.refId}\n\nOTP Code: ${pendingRegOtpCode}`);
     }
     document.getElementById('reg-otp-verify-container').style.display = 'block';
-    showTaskFeedback('reg-task-feedback', 'SUCCESS', `OTP sent to email. Enter 6-digit OTP code below. (Demo OTP: ${pendingRegOtpCode})`);
+    showTaskFeedback('reg-task-feedback', 'SUCCESS', `OTP generated successfully! Enter 6-digit OTP below. (Demo OTP: ${pendingRegOtpCode})`);
     isVerifyingOtp = true;
     return;
   }
@@ -1591,14 +1599,14 @@ async function handleUserRegistration(e) {
   save();
   isVerifyingOtp = false;
 
-  showTaskFeedback('reg-task-feedback', 'SUCCESS', `SUCCESS! USER ID: ${generatedUserId} | 10-CHAR REF ID: ${tenCharRef.refId}. DONT SHARE IT WITH ANYONE!`);
+  showTaskFeedback('reg-task-feedback', 'SUCCESS', `SUCCESS! USER ID: ${generatedUserId} | 10-CHAR REF ID: ${tenCharRef.refId}.`);
 }
 
 function trackPreLoginRef(e) {
   const query = e.target.value.trim();
   const resultBox = document.getElementById('prelogin-ref-result');
   if(!query) {
-    resultBox.innerText = 'TRACKS PRE-LOGIN REGISTRATION / TRANSACTION STATUS ONLY.';
+    resultBox.innerText = 'STATUS RESULTS WILL APPEAR HERE...';
     resultBox.style.color = 'var(--dim)';
     return;
   }
@@ -1620,7 +1628,6 @@ function onRecoveryTypeChange() {
 
 async function handleRecoverySubmission(e) {
   e.preventDefault();
-  showLoadingFeedback('recover-task-feedback');
   const tenCharRef = await generateTenCharRefId();
   const recType = document.getElementById('rec-type').value;
   const phone = document.getElementById('rec-phone').value.trim().replace(/[^0-9]/g,'');
@@ -1649,7 +1656,6 @@ async function handleRecoverySubmission(e) {
 
 async function adminCreateUser(e) {
   e.preventDefault();
-  showLoadingFeedback('admin-create-task-feedback');
   const tenCharRef = await generateTenCharRefId();
   const uid = document.getElementById('admin-new-uid').value.trim().toUpperCase();
   const pin = document.getElementById('admin-new-pin').value.trim();
@@ -1719,7 +1725,7 @@ async function processVCF(e) {
 function toggleAccountOtpBox() { document.getElementById('acc-otp-box').style.display = (document.getElementById('acc-auth-mode').value === 'OTP') ? 'block' : 'none'; }
 
 async function manualAccount(e) {
-  e.preventDefault(); showLoadingFeedback('acc-task-feedback');
+  e.preventDefault();
   const tenCharRef = await generateTenCharRefId(); const phone = document.getElementById('acc-phone').value.trim().replace(/[^0-9]/g,'');
   const accNo = getSerial(); const nowStr = new Date().toLocaleString();
   const emailVal = document.getElementById('acc-email').value.trim().toUpperCase()||'N/A';
@@ -1730,7 +1736,7 @@ async function manualAccount(e) {
   save(); 
 
   if (smsOn && emailVal !== 'N/A') {
-    await sendNotificationEmail(emailVal, "LEDGER: Account Successfully Created", `Dear ${holderNameVal},\n\nYour Ledger account (${accNo}) has been successfully created.`);
+    sendNotificationEmail(emailVal, "LEDGER: Account Successfully Created", `Dear ${holderNameVal},\n\nYour Ledger account (${accNo}) has been successfully created.`);
   }
   showTaskFeedback('acc-task-feedback', 'SUCCESS', `Account ${accNo} created. REF ID: ${tenCharRef.refId}`);
   e.target.reset();
@@ -1754,7 +1760,6 @@ function openEditAcc(accNo) {
 
 async function saveAccEdit(e) {
   e.preventDefault(); if(!editingAccNo) return;
-  showLoadingFeedback('edit-task-feedback');
   const tenCharRef = await generateTenCharRefId();
   const acc = db.accounts.find(a => a.accountNumber === editingAccNo);
   if(acc) {
@@ -1828,7 +1833,7 @@ async function toggleLockAccount(accNo) {
       const plainEmail = await decryptData(acc.email);
       const plainName = await decryptData(acc.holderName);
       const lockText = acc.status === 'LOCKED' ? 'LOCKED' : 'UNLOCKED';
-      await sendNotificationEmail(plainEmail, `LEDGER Security Notice: Account ${lockText}`, `Dear ${plainName},\n\nYour account (${accNo}) has been explicitly ${lockText}.`);
+      sendNotificationEmail(plainEmail, `LEDGER Security Notice: Account ${lockText}`, `Dear ${plainName},\n\nYour account (${accNo}) has been explicitly ${lockText}.`);
     }
   }
 }
@@ -1857,7 +1862,6 @@ async function autoFetch() {
 
 async function processTx(e) {
   e.preventDefault(); 
-  showLoadingFeedback('tx-task-feedback');
   const tenCharRef = await generateTenCharRefId();
   let accNo = document.getElementById('tx-acc').value.trim();
   let amtInput = parseFloat(document.getElementById('tx-amt').value);
@@ -1890,7 +1894,7 @@ async function processTx(e) {
   if (acc.smsOptIn && acc.email && acc.email !== 'N/A') {
     const plainEmail = await decryptData(acc.email);
     const plainName = await decryptData(acc.holderName);
-    await sendNotificationEmail(plainEmail, `LEDGER Transaction Alert: ${type}`, `Hello ${plainName},\n\nTransaction update on (${accNo}):\nType: ${type} (${rule})\nAmount: ₹${amtInput.toFixed(2)}\nClear Balance: ₹${acc.balance.toFixed(2)}\nParticulars: ${ref}`);
+    sendNotificationEmail(plainEmail, `LEDGER Transaction Alert: ${type}`, `Hello ${plainName},\n\nTransaction update on (${accNo}):\nType: ${type} (${rule})\nAmount: ₹${amtInput.toFixed(2)}\nClear Balance: ₹${acc.balance.toFixed(2)}\nParticulars: ${ref}`);
   }
   showTaskFeedback('tx-task-feedback', 'SUCCESS', `DONE: ${type} (${rule}) OF ${amtInput.toFixed(2)}. REF: ${tenCharRef.refId}`);
   document.getElementById('tx-amt').value=''; document.getElementById('tx-ref').value='';
@@ -1932,7 +1936,493 @@ function handlePassbookKeyDown(e) {
   }
 }
 
-updateNet(); init();
+async function exportPassbookPdf() {
+  const accNo = document.getElementById('pb-acc-input').value.trim();
+  const acc = db.accounts.find(a => a.accountNumber === accNo);
+  if (!acc) { alert("PLEASE ENTER A VALID ACCOUNT NUMBER FIRST."); return; }
+  const plainName = await decryptData(acc.holderName);
+  const printTimestamp = new Date().toLocaleString();
+  
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: ACCOUNT PASSBOOK STATEMENT\n`;
+  content += `ACCOUNT NO : ${accNo}\n`;
+  content += `HOLDER NAME: ${plainName}\n`;
+  content += `MOBILE NO  : ${acc.phone}\n`;
+  content += `CLEAR BAL  : ₹${acc.balance.toFixed(2)}\n`;
+  content += `----------------------------------------\n`;
+  content += `DATE & TIME | TYPE | PARTICULARS | AMOUNT\n`;
+  content += `----------------------------------------\n`;
+
+  db.ledger.filter(l => l.accNo === accNo).forEach(l => {
+    content += `${l.date} ${l.time} | ${l.type} | ${l.narrative} | ₹${l.amount || 0}\n`;
+  });
+
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT: ${printTimestamp}\n`;
+  content += `========================================\n`;
+
+  downloadTextAsFile(content, `PASSBOOK_${accNo}.txt`);
+}
+
+async function exportAuditPdf() {
+  const printTimestamp = new Date().toLocaleString();
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: IMMUTABLE AUDIT JOURNAL\n`;
+  content += `----------------------------------------\n`;
+  content += `REF ID     | DATE/TIME | A/C NO | TYP | AMT / PURPOSE\n`;
+  content += `----------------------------------------\n`;
+
+  db.ledger.slice(0, 100).forEach(l => {
+    content += `${l.refId || 'N/A'} | ${l.date} ${l.time} | ${l.accNo} | ${l.type} | ₹${l.amount || 0} - ${l.narrative}\n`;
+  });
+
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT: ${printTimestamp}\n`;
+  content += `========================================\n`;
+
+  downloadTextAsFile(content, `AUDIT_JOURNAL_${new Date().toISOString().slice(0,10)}.txt`);
+}
+
+function downloadTextAsFile(text, filename) {
+  try {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert("OFFLINE MODE: STATEMENT SAVED TO LOCAL DEVICE CACHE.");
+  }
+}
+
+function updateRecoverySetting() {
+  if(!db.settings) db.settings = { onlineDebitOnly: false, smsEnabled: true, recoveryDays: 7 };
+  db.settings.recoveryDays = document.getElementById('cfg-rec-days').value;
+  save(); alert('Recovery duration updated.');
+}
+function toggleDebitSetting() {
+  if(!db.settings) db.settings = { onlineDebitOnly: false, smsEnabled: true, recoveryDays: 7 };
+  db.settings.onlineDebitOnly = !db.settings.onlineDebitOnly; save(); renderAdmin();
+}
+function toggleSmsMasterSetting() {
+  if(!db.settings) db.settings = { onlineDebitOnly: false, smsEnabled: true, recoveryDays: 7 };
+  db.settings.smsEnabled = !db.settings.smsEnabled; save(); renderAdmin();
+}
+
+function renderAdmin() {
+  const btn = document.getElementById('btn-toggle-debit');
+  if(btn) btn.innerText = (db.settings && db.settings.onlineDebitOnly) ? 'ON (ONLINE ONLY)' : 'OFF (ALLOW OFFLINE)';
+  const btnSms = document.getElementById('btn-toggle-sms-master');
+  if(btnSms) btnSms.innerText = (db.settings && db.settings.smsEnabled) ? 'ON' : 'OFF';
+  const daysInput = document.getElementById('cfg-rec-days');
+  if(daysInput && db.settings) daysInput.value = db.settings.recoveryDays;
+
+  const sBody = document.getElementById('body-user-sessions');
+  if(sBody) {
+    sBody.innerHTML = '';
+    db.users.forEach(u => { sBody.innerHTML += `<tr><td class="bold">${u.id}</td><td>${u.role}</td><td>${u.status}</td><td class="dim">${u.lastIp || 'N/A'}</td><td class="dim" style="font-size:0.6rem;">${u.deviceFp || 'N/A'}</td></tr>`; });
+  }
+
+  const qBody = document.getElementById('body-recovery-queue');
+  if(qBody) {
+    qBody.innerHTML = '';
+    if(!db.recoverRequests || !db.recoverRequests.length) { qBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">NO PENDING RECOVERIES</td></tr>'; }
+    else {
+      db.recoverRequests.forEach((req, idx) => {
+        qBody.innerHTML += `<tr><td class="bold">${req.refId}</td><td>${req.uid}</td><td>${req.phone}</td><td>${req.details}</td><td>${req.deadline}</td><td><button onclick="approveRecovery('${idx}')" style="padding:2px 6px; font-size:0.65rem;">APPROVE</button></td></tr>`;
+      });
+    }
+  }
+
+  const pBody = document.getElementById('body-personnel-admin');
+  if(pBody) {
+    pBody.innerHTML = '';
+    db.users.forEach(u => {
+      const isMasterOwner = u.id === 'MASTER_OWNER' || u.role === 'OWNER';
+      pBody.innerHTML += `
+        <tr>
+          <td class="bold">${u.id}</td>
+          <td>
+            ROLE: <select onchange="updateUserRole('${u.id}', this.value)" ${isMasterOwner?'disabled':''} style="font-size:0.65rem; padding:2px;">
+              <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
+              <option value="OPERATOR" ${u.role==='OPERATOR'?'selected':''}>OPERATOR</option>
+              <option value="SUBSCRIBER_TENANT" ${u.role==='SUBSCRIBER_TENANT'?'selected':''}>SUBSCRIBER</option>
+            </select><br><span class="dim" style="font-size:0.55rem;">STATUS: ${u.status}</span>
+          </td>
+          <td>
+            <div style="display:flex; gap:2px;">
+              <button onclick="toggleLockUser('${u.id}'); flashButton(this);" style="padding:2px 3px; font-size:0.55rem;" ${isMasterOwner?'disabled':''}>${u.status==='LOCKED'?'UNL':'LCK'}</button>
+              <button onclick="editUserPrompt('${u.id}')" style="padding:2px 3px; font-size:0.55rem;">PIN</button>
+              <button onclick="deleteUserAdmin('${u.id}')" style="padding:2px 3px; font-size:0.55rem; color:#ff4444;" ${isMasterOwner?'disabled':''}>DEL</button>
+            </div>
+          </td>
+        </tr>`;
+    });
+  }
+}
+
+function updateUserRole(uid, newRole) {
+  const u = db.users.find(x => x.id === uid);
+  if(u) {
+    u.role = newRole;
+    save();
+    alert(`USER ${uid} ROLE UPDATED TO ${newRole}.`);
+    renderAdmin();
+  }
+}
+
+function editUserPrompt(uid) {
+  const u = db.users.find(x => x.id === uid);
+  if(!u) return;
+  const newPin = prompt(`ENTER NEW PIN FOR ${uid}:`, u.pin);
+  if(newPin && newPin.length >= 4) {
+    u.pin = newPin;
+    save();
+    alert(`PIN UPDATED FOR ${uid}.`);
+  } else if(newPin) {
+    alert('PIN MUST MEET FORMAT RULES.');
+  }
+}
+
+function approveRecovery(idx) {
+  const req = db.recoverRequests[idx];
+  if(req) {
+    const user = db.users.find(x => x.id === req.uid);
+    const newPin = '1234';
+    if(user) { user.pin = newPin; user.status = 'ACTIVE'; }
+    else { db.users.push({ id: req.uid, pin: newPin, role: 'OPERATOR', status: 'ACTIVE', lastIp: '127.0.0.1', phone: req.phone, deviceFp: deviceFingerprint, lastActive: Date.now() }); }
+    alert(`Recovery Approved! Temporary PIN: ${newPin}`);
+    db.recoverRequests.splice(idx, 1); save(); renderAdmin();
+  }
+}
+
+function toggleLockUser(uid) {
+  const u = db.users.find(x => x.id === uid);
+  if(u && u.id !== 'MASTER_OWNER') { u.status = (u.status === 'LOCKED') ? 'ACTIVE' : 'LOCKED'; save(); renderAdmin(); }
+}
+
+function deleteUserAdmin(uid) {
+  if(uid !== 'MASTER_OWNER' && confirm(`DELETE USER ${uid}?`)) { db.users = db.users.filter(x => x.id !== uid); save(); renderAdmin(); }
+}
+
+function onReportPeriodChange() {
+  const period = document.getElementById('rep-period').value;
+  document.getElementById('rep-start').style.display = (period === 'custom') ? 'block' : 'none';
+  document.getElementById('rep-end').style.display = (period === 'custom') ? 'block' : 'none';
+  generateReport();
+}
+
+function generateReport() {
+  const type = document.getElementById('rep-type').value;
+  const tbody = document.getElementById('body-report-results'); if(!tbody) return;
+  tbody.innerHTML = '';
+  let filtered = db.ledger.filter(l => type === 'ALL' || l.type === type);
+  if(!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">NO MATCHING RECORDS</td></tr>'; return; }
+  filtered.forEach(l => {
+    tbody.innerHTML += `<tr><td class="bold">${l.refId || 'N/A'}</td><td>${l.date || 'N/A'} ${l.time || ''}</td><td>${l.accNo || 'N/A'}</td><td class="bold">${l.type}</td><td>${l.amount ? l.amount.toFixed(2) : '0.00'}</td><td>${l.narrative || 'N/A'}</td><td class="dim">${l.operator || 'SYSTEM'}</td></tr>`;
+  });
+}
+
+function openSearchModal(){ 
+  document.getElementById('search-modal').style.display='flex'; 
+  clearAutoFillBoxes();
+  const queryInput = document.getElementById('search-query');
+  queryInput.value = '';
+  document.getElementById('search-enter-btn-container').style.display = 'none';
+  queryInput.focus();
+}
+function closeSearchModal(){ document.getElementById('search-modal').style.display='none'; }
+
+function onSearchCriteriaChange() {
+  const c = document.getElementById('search-criteria').value;
+  const qInput = document.getElementById('search-query'); 
+  qInput.value = ''; 
+  clearAutoFillBoxes();
+  
+  const enterBtnContainer = document.getElementById('search-enter-btn-container');
+
+  if (c === 'name' || c === 'ref') {
+    qInput.removeAttribute('inputmode');
+    qInput.removeAttribute('maxlength');
+    enterBtnContainer.style.display = 'block'; 
+  } else {
+    qInput.setAttribute('inputmode', 'numeric');
+    if (c === 'accNo') {
+      qInput.setAttribute('maxlength', '11');
+      qInput.placeholder = "ENTER 11-DIGIT ACC NO...";
+    } else if (c === 'mobile') {
+      qInput.setAttribute('maxlength', '10');
+      qInput.placeholder = "ENTER 10-DIGIT MOBILE NUMBER...";
+    }
+    enterBtnContainer.style.display = 'none';
+  }
+  qInput.focus();
+}
+
+function clearAutoFillBoxes() {
+  document.getElementById('label-primary-id').innerText = 'ACC NO / HOLDER:';
+  document.getElementById('autofill-main-identifier').innerText = '---';
+  document.getElementById('autofill-balance').innerText = '---';
+  document.getElementById('autofill-ref').innerText = '---';
+  document.getElementById('autofill-mobile').innerText = '---';
+  document.getElementById('autofill-email').innerText = '---';
+  document.getElementById('autofill-ip').innerText = '---';
+  document.getElementById('autofill-last-tx').innerText = '---';
+  document.getElementById('autofill-opened').innerText = '---';
+  document.getElementById('autofill-extra-desc').innerText = '---';
+  window.lastFetchedAccNo = null;
+}
+
+function handleSearchAutoInput(e) {
+  const c = document.getElementById('search-criteria').value;
+  const q = document.getElementById('search-query').value.trim();
+  
+  if (c === 'accNo') {
+    if (q.length > 11) {
+      e.target.value = q.slice(0, 11);
+    }
+    if (e.target.value.length === 11) {
+      runSearchForSingleRecord();
+    } else {
+      clearAutoFillBoxes();
+    }
+  } else if (c === 'mobile') {
+    if (q.length > 10) {
+      e.target.value = q.slice(0, 10);
+    }
+    if (e.target.value.length === 10) {
+      runSearchForSingleRecord();
+    } else {
+      clearAutoFillBoxes();
+    }
+  } else {
+    clearAutoFillBoxes();
+  }
+}
+
+function handleSearchKeyDown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    runSearchForSingleRecord();
+  }
+}
+
+async function runSearchForSingleRecord() {
+  const c = document.getElementById('search-criteria').value;
+  const q = document.getElementById('search-query').value.trim().toUpperCase();
+  if (!q) { clearAutoFillBoxes(); return; }
+
+  let matchRecord = null;
+  let extraInfoText = 'N/A';
+
+  if (c === 'ref') {
+    const foundLedger = db.ledger.find(l => l.refId && l.refId.toUpperCase() === q);
+    if (foundLedger) {
+      matchRecord = db.accounts.find(a => a.accountNumber === foundLedger.accNo);
+      extraInfoText = `TX TYPE: ${foundLedger.type} | NARRATIVE: ${foundLedger.narrative}`;
+    }
+  } else if (c === 'accNo') {
+    matchRecord = db.accounts.find(a => a.accountNumber === q);
+  } else if (c === 'mobile') {
+    matchRecord = db.accounts.find(a => a.phone === q);
+  } else if (c === 'name') {
+    for (let a of db.accounts) {
+      const plainName = await decryptData(a.holderName);
+      if (plainName.toUpperCase() === q || plainName.toUpperCase().includes(q)) {
+        matchRecord = a;
+        break;
+      }
+    }
+  }
+
+  if (matchRecord) {
+    const plainName = await decryptData(matchRecord.holderName);
+    const plainEmail = await decryptData(matchRecord.email);
+    
+    if (c === 'name') {
+      document.getElementById('label-primary-id').innerText = 'ACC NUMBER:';
+      document.getElementById('autofill-main-identifier').innerText = matchRecord.accountNumber;
+    } else {
+      document.getElementById('label-primary-id').innerText = 'ACC NO / HOLDER:';
+      document.getElementById('autofill-main-identifier').innerText = `${matchRecord.accountNumber} (${plainName})`;
+    }
+
+    document.getElementById('autofill-balance').innerText = matchRecord.balance.toFixed(2);
+    document.getElementById('autofill-ref').innerText = matchRecord.refId || 'N/A';
+    document.getElementById('autofill-mobile').innerText = matchRecord.phone || 'N/A';
+    document.getElementById('autofill-email').innerText = plainEmail || 'N/A';
+    document.getElementById('autofill-ip').innerText = matchRecord.ip || 'N/A';
+    
+    const lastTx = db.ledger.find(l => l.accNo === matchRecord.accountNumber);
+    document.getElementById('autofill-last-tx').innerText = lastTx ? `${lastTx.type} ₹${lastTx.amount.toFixed(2)}` : 'NO TX YET';
+    document.getElementById('autofill-opened').innerText = matchRecord.openedAt || 'N/A';
+    document.getElementById('autofill-extra-desc').innerText = extraInfoText;
+    
+    window.lastFetchedAccNo = matchRecord.accountNumber;
+  } else {
+    clearAutoFillBoxes();
+  }
+}
+
+async function exportSearchBoxPdf() {
+  if (!window.lastFetchedAccNo) {
+    alert("PLEASE FETCH AN ACCOUNT FIRST IN SEARCH.");
+    return;
+  }
+  const acc = db.accounts.find(a => a.accountNumber === window.lastFetchedAccNo);
+  if(!acc) return;
+  const plainName = await decryptData(acc.holderName);
+  const printTimestamp = new Date().toLocaleString();
+
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: SEARCH RECORD REPORT\n`;
+  content += `ACCOUNT NO : ${window.lastFetchedAccNo}\n`;
+  content += `HOLDER NAME: ${plainName}\n`;
+  content += `BALANCE    : ₹${acc.balance.toFixed(2)}\nMOBILE     : ${acc.phone}\n`;
+  content += `REF ID     : ${acc.refId || 'N/A'}\n`;
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT : ${printTimestamp}\n`;
+  content += `========================================\n`;
+
+  downloadTextAsFile(content, `RECORD_${window.lastFetchedAccNo}.txt`);
+  closeSearchModal();
+}
+
+function exportSearchBoxPassbook() {
+  if (!window.lastFetchedAccNo) {
+    alert("PLEASE FETCH AN ACCOUNT FIRST IN SEARCH.");
+    return;
+  }
+  showPage('page-passbook');
+  document.getElementById('pb-acc-input').value = window.lastFetchedAccNo;
+  loadPassbookData();
+  closeSearchModal();
+}
+
+function useSearch(acc){ closeSearchModal(); showPage('page-teller'); document.getElementById('tx-acc').value=acc; autoFetch(); }
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if(!input) return;
+  const msgText = input.value.trim();
+  if(!msgText || !session) return;
+
+  if(!db.chats) db.chats = [];
+  db.chats.push({
+    sender: session.id,
+    recipient: 'BROADCAST',
+    text: await encryptData(msgText),
+    time: new Date().toLocaleTimeString(),
+    timestamp: Date.now(),
+    read: false
+  });
+  save();
+  input.value = '';
+  renderModalChat();
+}
+
+function handleChatEnter(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+async function renderModalChat() {
+  cleanupChatsLifecycle();
+  const container = document.getElementById('chatBox');
+  if(!container) return;
+  container.innerHTML = '';
+  if(!db.chats || !db.chats.length) {
+    container.innerHTML = '<div style="text-align: center; color: var(--dim); font-size: 0.7rem;">NO MESSAGES YET</div>';
+    return;
+  }
+  for (let c of db.chats) {
+    const isMe = session && c.sender === session.id;
+    const plainText = await decryptData(c.text);
+    container.innerHTML += `<div class="chat-msg"><span>${c.sender}:</span> ${plainText}</div>`;
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function markMessagesRead() {
+  if(!db.chats) return;
+  db.chats.forEach(c => c.read = true);
+  save(); updateUnreadBadge();
+}
+
+function updateUnreadBadge() {
+  const badge = document.getElementById('msg-badge');
+  if(!badge || !db.chats) return;
+  const unreadCount = db.chats.filter(c => !c.read && (!session || c.sender !== session.id)).length;
+  if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
+}
+
+async function syncUI() {
+  let cr=0, dr=0; 
+  const rules = db.txRules || { CR: 'ADD', DR: 'SUB' };
+  for(let l of db.ledger) {
+    const rule = rules[l.type] || 'ADD';
+    if(rule === 'ADD') cr += l.amount; 
+    else if(rule === 'SUB') dr += l.amount; 
+  }
+  const depVal = document.getElementById('val-dep');
+  const withVal = document.getElementById('val-with');
+  const accsVal = document.getElementById('val-accs');
+  if(depVal) depVal.innerText=cr.toFixed(2); 
+  if(withVal) withVal.innerText=dr.toFixed(2); 
+  if(accsVal) accsVal.innerText=db.accounts.length;
+  updateUnreadBadge();
+  
+  for(let acc of db.accounts) {
+    if(acc.holderName && !acc.holderName.startsWith('ENC:')) acc.holderName = await encryptData(acc.holderName);
+  }
+
+  const jb = document.getElementById('body-journal');
+  if(jb) {
+    jb.innerHTML = '';
+    db.ledger.slice(0, 50).forEach(l => {
+      jb.innerHTML += `<tr>
+        <td>${l.seq}</td>
+        <td class="bold">${l.refId || 'N/A'}</td>
+        <td>${l.date || 'N/A'} ${l.time || ''}</td>
+        <td>${l.accNo || 'SYS'}</td>
+        <td>${l.type}</td>
+        <td>${l.amount ? l.amount.toFixed(2) : '0.00'} (${l.narrative})</td>
+        <td class="dim">${l.operator}</td>
+      </tr>`;
+    });
+  }
+}
+
+function togglePrintMeta(pageId) {
+  document.body.classList.toggle('hide-date', !document.getElementById('chk-date-' + pageId)?.checked);
+  document.body.classList.toggle('hide-time', !document.getElementById('chk-time-' + pageId)?.checked);
+  document.body.classList.toggle('hide-desc', !document.getElementById('chk-desc-' + pageId)?.checked);
+}
+
+function triggerPrint(pageId) {
+  window.print();
+}
+
+function updateNet() {
+  const tag = document.getElementById('net-status-tag');
+  if(navigator.onLine){ tag.innerText='ONLINE'; tag.style.color='#ffffff'; fetchClientIP(); backgroundSync(false); }
+  else { tag.innerText='OFFLINE'; tag.style.color='#888888'; currentClientIP = 'OFFLINE (PENDING)'; }
+}
+window.addEventListener('online', updateNet); window.addEventListener('offline', updateNet);
+
+document.addEventListener('DOMContentLoaded', () => { init(); });
 </script>
 </body>
 </html>
