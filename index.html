@@ -25,26 +25,10 @@
       animation: focusBlink 1s infinite !important;
     }
 
-    .loading-dots span {
-      animation: dotBlink 1.4s infinite both;
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    .loading-dots span:nth-child(2) { animation-delay: .2s; }
-    .loading-dots span:nth-child(3) { animation-delay: .4s; }
-    @keyframes dotBlink {
-      0% { opacity: .2; }
-      20% { opacity: 1; }
-      100% { opacity: .2; }
-    }
-
     .active-sub-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
-    button.active-action-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; }
     button.hit-flash-btn { background: var(--accent-green) !important; color: #fff !important; transform: scale(0.98); }
     
     .nav-btn.active-main-tab { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
-    .box.active-working-section { border-color: var(--yellow) !important; box-shadow: 0 0 8px rgba(255, 215, 0, 0.4); }
-
     .box { border: 1px solid var(--fg); padding: 8px; transition: all 0.2s ease; }
     .box-title { font-size: 0.75rem; border-bottom: 1px dashed var(--fg); padding-bottom: 2px; margin-bottom: 6px; display: flex; justify-content: space-between; font-weight: bold; align-items: center; }
     
@@ -70,7 +54,6 @@
 
     input, select, textarea { background: var(--bg); border: 1px solid var(--dim); color: var(--fg); font-family: inherit; padding: 6px 8px; font-size: 0.8rem; outline: none; width: 100%; text-transform: uppercase; }
     input[readonly], textarea[readonly] { border-style: dashed; color: var(--dim); }
-    input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
     button { background: var(--bg); color: var(--fg); border: 1px solid var(--fg); font-family: inherit; cursor: pointer; font-weight: bold; padding: 6px 8px; font-size: 0.75rem; text-transform: uppercase; transition: all 0.1s; }
     button:active { background: var(--fg); color: var(--bg); }
@@ -86,41 +69,17 @@
     .view-page { display: none; flex-direction: column; gap: 8px; }
     .stat-val { font-size: 1.2rem; font-weight: bold; margin-top: 2px; letter-spacing: 1px; }
     
-    #search-modal, #status-popup-modal, #generic-centered-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; justify-content: center; align-items: center; padding: 12px; }
+    #search-modal, #pin-verify-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; justify-content: center; align-items: center; padding: 12px; }
     
     .task-result-box { border: 2px solid var(--fg); background: #111; padding: 6px; margin-bottom: 6px; display: none; cursor: pointer; }
-
     .admin-menu-grid, .account-menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
     .admin-sub-panel, .account-sub-panel { display: none; border-top: 1px dashed var(--fg); padding-top: 8px; margin-top: 8px; }
-
-    .print-controls-bar {
-      display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.6rem; background: #111; border: 1px dashed var(--dim); padding: 4px 6px; margin-bottom: 4px; align-items: center;
-    }
-    .print-controls-bar label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
-    .print-receipt-header { display: none; }
-
-    @media print {
-      body { background: #fff !important; color: #000 !important; }
-      .prs-terminal > *:not(.view-page), #static-upper-dock, button, form, .box-title span:last-child, .grid-2, .grid-3, .grid-4, .task-result-box, input, select, textarea, .print-controls-bar { display: none !important; }
-      .view-page { display: none !important; }
-      .view-page[style*="flex"] { display: block !important; }
-      .prs-terminal { width: 100% !important; max-width: none !important; padding: 0 !important; }
-      .box { border: none !important; padding: 0 !important; }
-      .box-title { border-bottom: 2px solid #000 !important; color: #000 !important; margin-bottom: 6px !important; }
-      .print-receipt-header { display: block !important; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #000; font-size: 0.75rem; line-height: 1.3; color: #000 !important; }
-      .table-container { max-height: none !important; overflow: visible !important; border: 1px solid #000 !important; }
-      table { width: 100% !important; border-collapse: collapse !important; }
-      th, td { border: 1px solid #000 !important; color: #000 !important; padding: 4px !important; }
-      th { background: #eee !important; }
-    }
 
     @media (max-width: 650px) {
       .grid-2, .grid-3, .grid-4, .admin-menu-grid, .account-menu-grid { grid-template-columns: 1fr; }
       .nav-bar { grid-template-columns: repeat(7, 1fr); }
     }
   </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -133,71 +92,37 @@
     </div>
     <div class="grid-2">
       <div>
-        <select id="search-criteria" onchange="onSearchCriteriaChange()">
-          <option value="accNo" selected>1. ACC NO (AUTO-FETCH)</option>
-          <option value="mobile">2. MOBILE NUMBER (AUTO)</option>
-          <option value="ref">3. TRACK REF ID</option>
-          <option value="name">4. HOLDER NAME</option>
+        <select id="search-criteria">
+          <option value="accNo" selected>1. ACC NO / MOBILE / DETAILS</option>
         </select>
       </div>
       <div>
-        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
+        <input type="text" id="search-query" placeholder="ENTER QUERY..." onkeydown="handleSearchKeyDown(event)" />
       </div>
     </div>
+    <button class="inverted" onclick="runSearchForSingleRecord(); flashButton(this);" style="width: 100%; padding: 8px;">[ SEARCH RECORD ]</button>
 
-    <div style="height: 6px;" id="search-enter-gap"></div>
-    <div id="search-enter-btn-container" style="display:block; margin-bottom: 4px;">
-      <button class="inverted" onclick="runSearchForSingleRecord(); flashButton(this);" style="width: 100%; padding: 8px;">[ ENTER / SEARCH RECORD ]</button>
+    <div class="box" style="background:#111; margin-top:4px; min-height: 220px; display: flex; flex-direction: column; justify-content: space-around; padding: 14px;">
+      <div class="box-title" style="font-size:0.8rem; margin-bottom:8px;">AUTO-FETCHED RECORD DETAILS</div>
+      <div style="font-size:0.8rem; line-height: 1.4;" id="autofill-full-details">---</div>
     </div>
-
-    <div class="box" style="background:#111; margin-top:4px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-around; padding: 14px;">
-      <div class="box-title" style="font-size:0.8rem; margin-bottom:8px;">AUTO-FETCHED RECORD DETAILS (SINGLE VIEW)</div>
-      <div class="grid-3" style="font-size:0.85rem; gap: 10px;">
-        <div><span class="dim" id="label-primary-id">ACC NO / HOLDER:</span><br><span id="autofill-main-identifier" class="bold" style="font-size:0.95rem;">---</span></div>
-        <div><span class="dim">BALANCE:</span><br><span id="autofill-balance" class="bold" style="font-size:0.95rem;">---</span></div>
-        <div><span class="dim">REF ID:</span><br><span id="autofill-ref" class="bold" style="font-size:0.95rem;">---</span></div>
-      </div>
-      <div class="grid-3" style="font-size:0.8rem; margin-top:8px; border-top: 1px dashed var(--dim); padding-top: 8px;">
-        <div><span class="dim">MOBILE:</span> <span id="autofill-mobile" class="bold">---</span></div>
-        <div><span class="dim">EMAIL:</span> <span id="autofill-email" class="bold">---</span></div>
-        <div><span class="dim">LAST IP:</span> <span id="autofill-ip" class="bold">---</span></div>
-      </div>
-      <div class="grid-3" style="font-size:0.8rem; margin-top:4px;">
-        <div><span class="dim">LAST TX:</span> <span id="autofill-last-tx" class="bold">---</span></div>
-        <div><span class="dim">OPENED:</span> <span id="autofill-opened" class="bold">---</span></div>
-        <div><span class="dim">INFO:</span> <span id="autofill-extra-desc" class="bold">---</span></div>
-      </div>
-    </div>
-
-    <div class="grid-2" style="margin-top: auto; padding-top: 6px; border-top: 1px dashed var(--fg);">
-      <button class="inverted" onclick="exportSearchBoxPdf(); flashButton(this);" style="padding: 10px;">[ 1. GENERATE PDF ]</button>
-      <button class="inverted" onclick="exportSearchBoxPassbook(); flashButton(this);" style="padding: 10px;">[ 2. VIEW PASSBOOK ]</button>
+    <div class="grid-2" style="margin-top: auto;">
+      <button class="inverted" onclick="exportSearchBoxPassbook(); flashButton(this);" style="padding: 10px;">[ VIEW PASSBOOK ]</button>
+      <button class="inverted" onclick="closeSearchModal(); flashButton(this);" style="padding: 10px;">[ CLOSE ]</button>
     </div>
   </div>
 </div>
 
-<!-- CENTERED POPUP MODAL FOR VIEW REQUEST STATUS -->
-<div id="status-popup-modal">
-  <div class="box" style="width: 100%; max-width: 450px; background: #111; border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+<!-- PIN VERIFICATION MODAL -->
+<div id="pin-verify-modal">
+  <div class="box" style="width: 100%; max-width: 400px; background: #111; border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
     <div class="box-title">
-      <span>PRE-LOGIN REQUEST STATUS TRACKER</span>
-      <span onclick="closeStatusPopupModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
+      <span>SECURITY PIN REQUIRED FOR EDIT</span>
+      <span onclick="closePinVerifyModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
     </div>
-    <p class="dim" style="font-size: 0.75rem;">ENTER 10-CHARACTER REF ID:</p>
-    <input type="text" id="prelogin-ref-input" placeholder="ENTER 10-CHAR REF ID..." maxlength="10" style="font-size: 0.9rem; padding: 10px;" oninput="trackPreLoginRef(event)" />
-    <div id="prelogin-ref-result" style="font-size: 0.75rem; color: var(--dim); padding: 6px; border: 1px dashed var(--dim); min-height: 50px;">STATUS RESULTS WILL APPEAR HERE...</div>
-    <button class="inverted" onclick="closeStatusPopupModal()" style="padding: 8px; margin-top: 4px;">[ CLOSE WINDOW ]</button>
-  </div>
-</div>
-
-<!-- GENERIC CENTERED POPUP MODAL FOR CHAT / WINDOWS -->
-<div id="generic-centered-modal">
-  <div class="box" id="generic-modal-box" style="width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; background: var(--bg); border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-    <div class="box-title">
-      <span id="generic-modal-title">MODAL DESK</span>
-      <span onclick="closeGenericModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
-    </div>
-    <div id="generic-modal-body" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <p class="dim" style="font-size: 0.75rem;">ENTER YOUR USER PIN TO AUTHORIZE MODIFICATION:</p>
+    <input type="password" id="modal-verify-pin" placeholder="ENTER PIN..." style="font-size: 1rem; padding: 10px;" />
+    <button class="inverted" onclick="confirmPinAndExecuteEdit(); flashButton(this);" style="padding: 10px;">[ AUTHORIZE EDIT ]</button>
   </div>
 </div>
 
@@ -207,15 +132,15 @@
   <div id="static-upper-dock">
     <div class="status-bar">
       <div class="ledger-header-brand">LEDGER // MASTER SECURE TERMINAL</div>
-      <div>NET: <span id="net-status-tag" class="blink">CHECKING...</span></div>
+      <div>NET: <span id="net-status-tag" class="bold">ONLINE</span></div>
       <div>USER: <span id="session-tag">DISCONNECTED</span></div>
       <div id="cloud-sync-status" class="dim">SYNC: IDLE</div>
     </div>
     <div class="status-bar-divider"></div>
 
     <div class="post-login-controls" id="post-login-controls">
-      <div class="mid-action-bar" id="mid-action-bar">
-        <button class="btn-msg" onclick="openChatModal(); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="msg-badge" style="display:inline-block; margin-left:4px;">0</span></button>
+      <div class="mid-action-bar">
+        <button onclick="showPage('page-chat'); flashButton(this);">💬 RECEPTION & CHAT</button>
         <button onclick="openSearchModal(); flashButton(this);">🔍 SEARCH DIRECTORY</button>
       </div>
 
@@ -224,7 +149,7 @@
         <button class="nav-btn" onclick="showPage('page-acc'); flashButton(this);">2.ACCOUNTS</button>
         <button class="nav-btn" onclick="showPage('page-teller'); flashButton(this);">3.TELLER</button>
         <button class="nav-btn" onclick="showPage('page-passbook'); flashButton(this);">4.PASSBOOK</button>
-        <button class="nav-btn" onclick="openChatModal(); flashButton(this);">5.CHAT</button>
+        <button class="nav-btn" onclick="showPage('page-chat'); flashButton(this);">5.CHAT</button>
         <button class="nav-btn" onclick="showPage('page-audit'); flashButton(this);">6.AUDIT</button>
         <button class="nav-btn" id="btn-section-7" onclick="showPage('page-section-7'); flashButton(this);">7.ADMIN</button>
       </nav>
@@ -237,30 +162,25 @@
     <div class="view-page" id="page-login" style="display: flex; margin-top: 2vh; gap: 12px; align-items: center;">
       <div class="box" id="login-box" style="width: 100%; max-width: 550px; margin: 0 auto; padding: 20px;">
         <div class="box-title" style="font-size: 0.9rem; text-align: center; justify-content: center;">LEDGER // OPERATOR LOGIN</div>
-        <div id="login-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
         <form onsubmit="handleLogon(event)" style="display:flex; flex-direction:column; gap:14px; margin-top: 15px;">
           <div>
             <label class="dim" style="font-size: 0.75rem; display: block; margin-bottom: 4px;">OPERATOR ID / USER ID:</label>
-            <input type="text" id="inp-uid" class="autofocus-target" placeholder="E.G. USR-123456" required autofocus style="font-size: 1rem; padding: 10px;" oninput="autoJump(this, 'inp-pin')" />
+            <input type="text" id="inp-uid" placeholder="E.G. MASTER_OWNER" required autofocus style="font-size: 1rem; padding: 10px;" />
           </div>
           <div>
             <label class="dim" style="font-size: 0.75rem; display: block; margin-bottom: 4px;">SECURITY PIN:</label>
-            <input type="password" id="inp-pin" placeholder="PIN" required style="font-size: 1rem; padding: 10px;" oninput="validatePinInput(this)" />
-            <div id="pin-hint" style="font-size: 0.6rem; color: var(--yellow); margin-top: 4px;">RULE (SET BY OWNER): DYNAMIC HINT.</div>
+            <input type="password" id="inp-pin" placeholder="PIN" required style="font-size: 1rem; padding: 10px;" />
           </div>
           <button type="submit" class="inverted" onclick="flashButton(this)" style="font-size: 1rem; padding: 12px; margin-top: 6px;">[ AUTHORIZE LOGIN ]</button>
         </form>
         <div class="grid-2" style="margin-top: 16px;">
-          <button type="button" onclick="toggleLoginAction('reg'); flashButton(this);" class="inverted" style="padding: 10px;">[ REGISTER ]</button>
-          <button type="button" onclick="toggleLoginAction('recover'); flashButton(this);" class="inverted" style="padding: 10px;">[ RECOVER ]</button>
+          <button type="button" onclick="toggleLoginAction('reg'); flashButton(this);" class="inverted" style="padding: 10px;">[ REGISTER (10-DIGIT REF) ]</button>
         </div>
       </div>
 
       <!-- Registration Box -->
       <div class="box" id="reg-box" style="display:none; border-style:dashed; width: 100%; max-width: 550px; margin: 0 auto; padding: 20px;">
         <div class="box-title"><span>NEW USER REGISTRATION DESK</span> <span onclick="toggleLoginAction('login')" style="cursor:pointer; text-decoration:underline;">[BACK]</span></div>
-        <div id="reg-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
-        
         <form onsubmit="handleUserRegistration(event)" style="display:flex; flex-direction:column; gap:12px; margin-top: 10px;">
           <div>
             <label class="dim" style="font-size:0.75rem;">FULL NAME:</label>
@@ -268,65 +188,18 @@
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">MOBILE NO (10 DIGITS):</label>
-            <input type="tel" id="reg-phone" inputmode="numeric" placeholder="10-DIGIT MOBILE" maxlength="10" required style="font-size: 0.9rem; padding: 8px;" oninput="validateMobileInput(this)" />
-            <div id="reg-phone-warning" style="font-size:0.55rem; color:var(--accent-red); display:none;">EXACT 10 DIGITS REQUIRED.</div>
+            <input type="tel" id="reg-phone" inputmode="numeric" placeholder="10-DIGIT MOBILE" maxlength="10" required style="font-size: 0.9rem; padding: 8px;" />
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">CREATE PIN:</label>
-            <input type="password" id="reg-pin" placeholder="PIN" required style="font-size: 0.9rem; padding: 8px;" oninput="validatePinInput(this)" />
+            <input type="password" id="reg-pin" placeholder="PIN" required style="font-size: 0.9rem; padding: 8px;" />
           </div>
-          <div>
-            <label class="dim" style="font-size:0.75rem;">ASSIGN ROLE:</label>
-            <select id="reg-role-type" style="font-size: 0.9rem; padding: 8px;">
-              <option value="ADMIN" selected>ROLE: ADMIN</option>
-              <option value="OPERATOR">ROLE: OPERATOR</option>
-              <option value="SUBSCRIBER_TENANT">ROLE: INDEPENDENT CUSTOMER</option>
-              <option value="GENERAL_USER">ROLE: GENERAL USER</option>
-            </select>
-          </div>
-          <div>
-            <label class="dim" style="font-size:0.75rem;">EMAIL ADDRESS (OPTIONAL):</label>
-            <input type="text" id="reg-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this)" style="font-size: 0.9rem; padding: 8px;" />
-            <div id="email-warning" style="font-size:0.6rem; color:var(--accent-red); display:none; margin-top:2px;">WARNING: INVALID EMAIL FORMAT.</div>
-          </div>
-          <button type="submit" class="btn-green" onclick="flashButton(this)" style="padding: 10px; margin-top: 6px;">[ SUBMIT REGISTRATION ]</button>
-        </form>
-
-        <div style="margin-top: 10px; border-top: 1px dashed var(--fg); padding-top: 8px;">
-          <button type="button" class="inverted" onclick="openStatusPopupModal(); flashButton(this);" style="width: 100%; padding: 8px;">[ VIEW REQUEST STATUS (TRACK REF ID) ]</button>
-        </div>
-      </div>
-
-      <!-- Recovery Box -->
-      <div class="box" id="recover-box" style="display:none; border-style:dashed; width: 100%; max-width: 550px; margin: 0 auto; padding: 20px;">
-        <div class="box-title"><span>PASSWORD & USER ID RECOVERY DESK</span> <span onclick="toggleLoginAction('login')" style="cursor:pointer; text-decoration:underline;">[BACK]</span></div>
-        <div id="recover-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
-        
-        <form onsubmit="handleRecoverySubmission(event)" style="display:flex; flex-direction:column; gap:12px; margin-top: 10px;">
-          <div>
-            <label class="dim" style="font-size:0.75rem;">RECOVERY SELECTION:</label>
-            <select id="rec-type" style="font-size: 0.9rem; padding: 8px;" onchange="onRecoveryTypeChange()">
-              <option value="PASSWORD" selected>RECOVER PASSWORD</option>
-              <option value="USER_ID">RECOVER USER ID</option>
-            </select>
-          </div>
-          <div id="rec-uid-group">
-            <label class="dim" style="font-size:0.75rem;">USER ID:</label>
-            <input type="text" id="rec-uid" placeholder="USER ID" style="font-size: 0.9rem; padding: 8px;" />
-          </div>
-          <div>
-            <label class="dim" style="font-size:0.75rem;">VERIFIED MOBILE NO (10 DIGITS):</label>
-            <input type="tel" id="rec-phone" inputmode="numeric" placeholder="10-DIGIT MOBILE" maxlength="10" required style="font-size: 0.9rem; padding: 8px;" oninput="validateMobileInput(this)" />
-          </div>
-          <div>
-            <label class="dim" style="font-size:0.75rem;">DETAILS / REASON:</label>
-            <input type="text" id="rec-details" placeholder="VERIFICATION DETAILS" required style="font-size: 0.9rem; padding: 8px;" />
-          </div>
-          <button type="submit" class="inverted" onclick="flashButton(this)" style="padding: 10px;">[ SUBMIT RECOVERY REQUEST ]</button>
+          <button type="submit" class="btn-green" onclick="flashButton(this)" style="padding: 10px; margin-top: 6px;">[ SUBMIT REGISTRATION (10-DIGIT REF) ]</button>
         </form>
       </div>
     </div>
 
+    <!-- Dash Page -->
     <div class="view-page" id="page-dash">
       <div class="grid-3">
         <div class="box"><div class="box-title">DEPOSITS (CR)</div><div class="stat-val" id="val-dep">0.00</div></div>
@@ -335,84 +208,43 @@
       </div>
     </div>
 
+    <!-- Accounts Page -->
     <div class="view-page" id="page-acc">
       <div class="box">
-        <div class="box-title">ACCOUNTS MANAGEMENT DESK</div>
+        <div class="box-title">ACCOUNTS & FULL VCF COMPREHENSIVE IMPORT DESK</div>
         <div class="account-menu-grid">
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-import', this)">[1] HYBRID CONTACT & VCF IMPORT</button>
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-manual', this)">[2] MANUAL REGISTRATION</button>
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-edit', this)">[3] MODIFICATION DESK</button>
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-directory', this)">[4] RECORD DIRECTORY</button>
+          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-import', this)">[1] UNRESTRICTED FULL VCF / TEXT IMPORT</button>
+          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-directory', this)">[2] RECORD DIRECTORY & DELETE/EDIT</button>
         </div>
 
-        <div id="panel-acc-import" class="account-sub-panel">
-          <div class="box-title"><span>CONTACT IMPORT ENGINE</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div class="grid-2">
-            <button class="inverted" onclick="importMultipleContacts(); flashButton(this);">[ CHOOSE CONTACTS ]</button>
-            <button class="inverted" onclick="document.getElementById('vcf-upload').click()">[ IMPORT .VCF ]</button>
-          </div>
-          <input type="file" id="vcf-upload" accept=".vcf" style="display:none;" onchange="processVCF(event)" />
-        </div>
-
-        <div id="panel-acc-manual" class="account-sub-panel">
-          <div class="box-title"><span>MANUAL REGISTRATION</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div id="acc-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
-          <form onsubmit="manualAccount(event)" style="display:flex; flex-direction:column; gap:8px;">
-            <div class="grid-3">
-              <input type="text" id="acc-name" placeholder="HOLDER NAME" required />
-              <input type="text" id="acc-father" placeholder="FATHER'S NAME" />
-              <input type="tel" id="acc-phone" inputmode="numeric" placeholder="MOBILE NO (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this)" />
-            </div>
-            <div class="grid-3">
-              <input type="text" id="acc-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this)" />
-              <select id="acc-sms"><option value="OFF" selected>SMS ALERTS: OFF</option><option value="ON">SMS ALERTS: ON</option></select>
-              <select id="acc-auth-mode"><option value="DIRECT">CREATE WITHOUT OTP</option></select>
-            </div>
-            <textarea id="acc-address" placeholder="PHYSICAL ADDRESS" rows="1"></textarea>
-            <button type="submit" class="inverted" onclick="flashButton(this)">[ GENERATE A/C ]</button>
-          </form>
-        </div>
-
-        <div id="panel-acc-edit" class="account-sub-panel">
-          <div class="box-title"><span>MODIFICATION DESK</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div id="edit-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
-          <form onsubmit="saveAccEdit(event)" style="display:flex; flex-direction:column; gap:8px;">
-            <div class="grid-2"><input type="text" id="edit-accno" placeholder="SELECT A/C FROM DIRECTORY" readonly /><input type="text" id="edit-bal" readonly placeholder="BALANCE" /></div>
-            <div class="grid-2"><input type="text" id="edit-name" required placeholder="HOLDER NAME" /><input type="text" id="edit-father" required placeholder="FATHER'S NAME" /></div>
-            <div class="grid-2"><input type="tel" id="edit-phone" inputmode="numeric" placeholder="MOBILE (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this)" /><input type="text" id="edit-email" placeholder="EMAIL (OPTIONAL)" /></div>
-            <div class="grid-2"><textarea id="edit-address" rows="2" placeholder="ADDRESS"></textarea><select id="edit-sms"><option value="ON">SMS: ON</option><option value="OFF">SMS: OFF</option></select></div>
-            <button type="submit" class="inverted" onclick="flashButton(this)">[ SUBMIT EDIT ]</button>
-          </form>
+        <div id="panel-acc-import" class="account-sub-panel" style="display:block;">
+          <div class="box-title"><span>PASTE RAW VCF OR MULTI-LINE CONTACT TEXT (CAPTURES 100% OF ALL FIELDS)</span></div>
+          <textarea id="vcf-raw-input" rows="8" placeholder="PASTE FULL CONTACT DATA HERE (NAMES, PHONES, HOME/WORK, ADDRESS, NOTES, BANK, IDs, DATES, RELATIVES, ETC.)..." style="margin-bottom: 6px;"></textarea>
+          <button class="inverted" onclick="importComprehensiveVCF(); flashButton(this);" style="width: 100%;">[ PARSE & IMPORT ALL FIELDS (6-DIGIT REF) ]</button>
         </div>
 
         <div id="panel-acc-directory" class="account-sub-panel">
           <div class="box-title">
-            <span>RECORD DIRECTORY</span>
+            <span>RECORD DIRECTORY (SELECT MULTIPLE TO DELETE)</span>
             <div>
               <button class="inverted" onclick="loadAccountDirectory(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ LOAD ALL ]</button>
-              <button class="inverted" onclick="triggerPrint('page-acc'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT ]</button>
-              <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button>
+              <button class="btn-red" onclick="deleteSelectedAccounts(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ DELETE SELECTED ]</button>
             </div>
           </div>
-          <div class="print-controls-bar">
-            <label><input type="checkbox" id="chk-date-page-acc" checked onchange="togglePrintMeta('page-acc')" /> PRINT DATE</label>
-            <label><input type="checkbox" id="chk-time-page-acc" checked onchange="togglePrintMeta('page-acc')" /> PRINT TIME</label>
-          </div>
-          <div class="print-receipt-header" id="print-header-page-acc"></div>
           <div class="table-container">
             <table>
-              <thead><tr><th>ACC</th><th>HOLDER</th><th>CONTACT</th><th>BAL</th><th>ACTION</th></tr></thead>
-              <tbody id="body-accs"><tr><td colspan="5" style="text-align:center;">CLICK 'LOAD ALL' TO FETCH</td></tr></tbody>
+              <thead><tr><th><input type="checkbox" id="chk-select-all" onclick="toggleSelectAllAccounts(this)"></th><th>ACC</th><th>HOLDER</th><th>ALL CAPTURED FIELDS & ATTRIBUTES</th><th>BAL</th><th>ACTION</th></tr></thead>
+              <tbody id="body-accs"><tr><td colspan="6" style="text-align:center;">CLICK 'LOAD ALL' TO FETCH</td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Teller Page -->
     <div class="view-page" id="page-teller">
       <div class="box">
-        <div class="box-title">TRANSACTION CLEARING DESK</div>
-        <div id="tx-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
+        <div class="box-title">TRANSACTION CLEARING DESK (6-DIGIT REF)</div>
         <form onsubmit="processTx(event)" style="display:flex; flex-direction:column; gap:8px;">
           <div class="grid-2">
             <div><label class="dim">ACC NO:</label><input type="tel" id="tx-acc" inputmode="numeric" maxlength="11" oninput="autoFetch()" required /></div>
@@ -428,15 +260,10 @@
       </div>
     </div>
 
+    <!-- Passbook Page -->
     <div class="view-page" id="page-passbook">
       <div class="box">
-        <div class="box-title">
-          <span>DIGITAL PASSBOOK</span>
-          <div>
-            <button class="inverted" onclick="exportPassbookPdf(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem; margin-right: 4px;">[ GENERATE PDF ]</button>
-            <button class="inverted" onclick="triggerPrint('page-passbook'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT ]</button>
-          </div>
-        </div>
+        <div class="box-title"><span>DIGITAL PASSBOOK (CHRONOLOGICAL RUNNING BALANCE)</span></div>
         <div class="grid-2" style="margin-bottom: 8px;">
           <div><input type="tel" id="pb-acc-input" inputmode="numeric" maxlength="11" placeholder="ACC NO" oninput="loadPassbookData()" /></div>
           <div><input type="text" id="pb-holder-info" readonly placeholder="DETAILS" /></div>
@@ -450,162 +277,52 @@
       </div>
     </div>
 
+    <!-- Chat & Reception Page -->
+    <div class="view-page" id="page-chat">
+      <div class="box">
+        <div class="box-title">RECEPTION & CHAT TERMINAL</div>
+        <div class="table-container" style="height: 250px; margin-bottom: 8px; padding: 6px;" id="chat-messages-container">
+          <div style="text-align: center; color: var(--dim);">WELCOME TO RECEPTION DESK</div>
+        </div>
+        <form onsubmit="sendChatMessage(event)" class="grid-2">
+          <input type="text" id="chat-input-msg" placeholder="TYPE RECEPTION MESSAGE..." required />
+          <button type="submit" class="inverted">[ SEND MESSAGE ]</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin / Owner Page -->
     <div class="view-page" id="page-section-7">
-      <div class="box" id="section-7-container">
-        <div class="box-title"><span id="section-7-title">ADMINISTRATION & MASTER CONTROL</span></div>
-        <p class="dim" style="font-size:0.75rem; margin-bottom:8px;" id="section-7-desc">SELECT AN ADMINISTRATIVE OR USER MODULE BELOW:</p>
-        
-        <div class="admin-menu-grid" id="section-7-admin-grid">
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-settings', this)">[1] CONFIG & TX RULES & INTEREST</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-create-user', this)">[2] CREATE USER & ROLES</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-user-sessions', this)">[3] USER LOGIN & IP AUDIT</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-recovery-req', this)">[4] PASSWORD RECOVERY QUEUE</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-reports', this)">[5] TRANSACTION REPORTS</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-personnel', this)">[6] USER MGMT & BACKUP</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-submission-tracker', this)">[7] SUBMISSION & REF TRACKER</button>
+      <div class="box">
+        <div class="box-title">ADMINISTRATION & MASTER CONTROL (OWNER)</div>
+        <div class="admin-menu-grid">
+          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-reports', this)">[1] TRANSACTION REPORTS & EDIT/DEL</button>
+          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-factory-reset', this)">[2] FACTORY RESET (OWNER)</button>
         </div>
 
-        <div id="section-7-user-profile" style="display:none; padding: 10px;">
-          <p style="font-size: 0.8rem; margin-bottom: 10px;">CONNECTED WORKSPACE PROFILE (<span id="prof-workspace-badge">OWNER MODE</span>)</p>
-          <div class="grid-2" style="font-size: 0.75rem; margin-bottom: 12px;">
-            <div><span class="dim">USER ID:</span> <span id="prof-uid" class="bold">---</span></div>
-            <div><span class="dim">ROLE:</span> <span id="prof-role" class="bold">---</span></div>
-            <div><span class="dim">PHONE:</span> <span id="prof-phone" class="bold">---</span></div>
-            <div><span class="dim">STATUS:</span> <span id="prof-status" class="bold">---</span></div>
+        <div id="panel-reports" class="admin-sub-panel" style="display:block;">
+          <div class="box-title"><span>TRANSACTION REPORTS (PIN REQUIRED FOR EDIT)</span></div>
+          <div class="table-container">
+            <table><thead><tr><th>REF</th><th>DATE</th><th>ACC</th><th>TYP</th><th>AMT</th><th>ACTION</th></tr></thead><tbody id="body-report-results"></tbody></table>
           </div>
+        </div>
+
+        <div id="panel-factory-reset" class="admin-sub-panel">
+          <div class="box-title"><span>MASTER FACTORY RESET</span></div>
+          <p class="dim" style="font-size: 0.75rem; margin-bottom: 8px;">WARNING: THIS WILL WIPE ALL ACCOUNTS, TRANSACTIONS, AND RESET THE SYSTEM.</p>
+          <button class="btn-red" onclick="executeFactoryReset(); flashButton(this);" style="width: 100%; padding: 10px;">[ EXECUTE FACTORY RESET ]</button>
         </div>
 
         <div style="margin-top: 12px; border-top: 1px dashed var(--fg); padding-top: 10px;">
-          <button class="btn-red" onclick="confirmSignOut(); flashButton(this);" style="width: 100%; padding: 10px;">[ SIGN OUT ]</button>
-        </div>
-
-        <div id="panel-settings" class="admin-sub-panel">
-          <div class="box-title"><span>CONFIG & RULES // INTEREST ENGINE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div class="grid-3" style="margin-bottom: 8px;">
-            <button class="inverted" onclick="openConfigTab('cfg-tab-interest', this)">INTEREST ENGINE</button>
-            <button class="inverted" onclick="openConfigTab('cfg-tab-system', this)">SYSTEM RECOVERY</button>
-            <button class="inverted" onclick="openConfigTab('cfg-tab-pwd', this)">PASSWORD POLICY</button>
-          </div>
-
-          <div id="cfg-tab-interest" class="settings-sub-panel" style="display:none; border:1px dashed var(--dim); padding:8px; margin-top:6px;">
-            <div class="bold" style="font-size: 0.75rem; margin-bottom: 6px; color: var(--yellow);">INTEREST CALCULATION ENGINE</div>
-            <div class="grid-2" style="margin-bottom: 6px;">
-              <div>
-                <label class="dim" style="font-size: 0.65rem;">TARGET SCOPE:</label>
-                <select id="interest-scope" style="font-size: 0.75rem;"><option value="ALL">ALL ACCOUNTS</option></select>
-              </div>
-              <div>
-                <label class="dim" style="font-size: 0.65rem;">TARGET ID:</label>
-                <input type="text" id="interest-target" placeholder="ACC NO" style="font-size: 0.75rem;" />
-              </div>
-            </div>
-            <div class="grid-3" style="margin-bottom: 6px;">
-              <div>
-                <label class="dim" style="font-size: 0.65rem;">RATE (%):</label>
-                <input type="number" step="any" id="interest-rate" placeholder="5.5" style="font-size: 0.75rem;" />
-              </div>
-              <div>
-                <label class="dim" style="font-size: 0.65rem;">TYPE:</label>
-                <select id="interest-type" onchange="toggleInterestTimeBox()" style="font-size: 0.75rem;">
-                  <option value="SI">SIMPLE (SI)</option>
-                  <option value="CI">COMPOUND (CI)</option>
-                </select>
-              </div>
-              <div id="interest-time-container" style="display: none;">
-                <label class="dim" style="font-size: 0.65rem;">YEARS:</label>
-                <input type="number" step="any" id="interest-time" placeholder="1" style="font-size: 0.75rem;" />
-              </div>
-            </div>
-            <button class="btn-green" onclick="executeInterestCalculation(); flashButton(this);" style="width: 100%;">[ COMPUTE INTEREST ]</button>
-          </div>
-
-          <div id="cfg-tab-system" class="settings-sub-panel" style="display:none; border:1px dashed var(--dim); padding:8px; margin-top:6px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; padding: 5px 0;">
-              <span>DEFAULT RECOVERY PERIOD (DAYS):</span>
-              <input type="number" id="cfg-rec-days" value="7" style="width: 70px;" onchange="updateRecoverySetting()" />
-            </div>
-          </div>
-
-          <div id="cfg-tab-pwd" class="settings-sub-panel" style="display:none; border:1px dashed var(--dim); padding:8px; margin-top:6px;">
-            <label class="dim" style="font-size:0.65rem;">PASSWORD RULE CONFIGURATION:</label>
-            <select id="admin-pwd-rule" onchange="updatePasswordRuleSetting()">
-              <option value="MIXED_CHAR" selected>MIXED (8+ CHARS)</option>
-              <option value="4_NUMERIC">4-DIGIT NUMERIC</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="panel-create-user" class="admin-sub-panel">
-          <div class="box-title"><span>USER CREATION DESK</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div id="admin-create-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
-          <form onsubmit="adminCreateUser(event)" style="display:flex; flex-direction:column; gap:8px;">
-            <div class="grid-2">
-              <input type="text" id="admin-new-uid" placeholder="NEW USER ID" required />
-              <input type="password" id="admin-new-pin" placeholder="PIN" required oninput="validatePinInput(this)" />
-            </div>
-            <div class="grid-2">
-              <input type="tel" id="admin-new-phone" inputmode="numeric" placeholder="MOBILE (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this)" />
-              <select id="admin-new-role"><option value="OPERATOR" selected>ROLE: OPERATOR</option><option value="ADMIN">ROLE: ADMIN</option></select>
-            </div>
-            <button type="submit" class="inverted" onclick="flashButton(this)">[ CREATE USER ]</button>
-          </form>
-        </div>
-
-        <div id="panel-user-sessions" class="admin-sub-panel">
-          <div class="box-title"><span>USER LOGIN & IP AUDIT</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div class="table-container">
-            <table><thead><tr><th>USER ID</th><th>ROLE</th><th>STATUS</th><th>LAST IP</th></tr></thead><tbody id="body-user-sessions"></tbody></table>
-          </div>
-        </div>
-
-        <div id="panel-recovery-req" class="admin-sub-panel">
-          <div class="box-title"><span>PASSWORD RECOVERY QUEUE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div class="table-container">
-            <table><thead><tr><th>REF ID</th><th>USER ID</th><th>PHONE</th><th>ACTION</th></tr></thead><tbody id="body-recovery-queue"></tbody></table>
-          </div>
-        </div>
-
-        <div id="panel-reports" class="admin-sub-panel">
-          <div class="box-title"><span>TRANSACTION REPORTS</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div class="table-container">
-            <table><thead><tr><th>REF ID</th><th>DATE/TIME</th><th>ACC</th><th>TYPE</th><th>AMT</th><th>OPERATOR</th></tr></thead><tbody id="body-report-results"></tbody></table>
-          </div>
-        </div>
-
-        <div id="panel-personnel" class="admin-sub-panel">
-          <div class="box-title"><span>USER MGMT & BACKUP</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <div style="margin-bottom: 8px; display:flex; gap:6px;">
-            <button class="inverted" onclick="exportBackupData(); flashButton(this);">[ EXPORT BACKUP ]</button>
-            <button class="inverted" onclick="document.getElementById('backup-file-input').click()">[ RESTORE BACKUP ]</button>
-            <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="importBackupData(event)" />
-          </div>
-          <div class="table-container">
-            <table><thead><tr><th>USER ID</th><th>ROLE / STATUS</th><th>ACTIONS</th></tr></thead><tbody id="body-personnel-admin"></tbody></table>
-          </div>
-        </div>
-
-        <div id="panel-submission-tracker" class="admin-sub-panel">
-          <div class="box-title"><span>SUBMISSION & REF STATUS TRACKER</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <p class="dim" style="font-size: 0.65rem; margin-bottom: 6px;">SHOWS SUBMISSION STATUS (OFFLINE, ONLINE, PENDING) AND REF ID GENERATION.</p>
-          <div class="table-container">
-            <table>
-              <thead><tr><th>ID / TYPE</th><th>ACC / DETAIL</th><th>REF ID</th><th>STATUS</th><th>ACTION</th></tr></thead>
-              <tbody id="body-submission-tracker"><tr><td colspan="5" style="text-align:center;">NO SUBMISSIONS LOGGED</td></tr></tbody>
-            </table>
-          </div>
+          <button class="btn-red" onclick="logout(); flashButton(this);" style="width: 100%; padding: 10px;">[ SIGN OUT ]</button>
         </div>
       </div>
     </div>
 
+    <!-- Audit Journal Page -->
     <div class="view-page" id="page-audit">
       <div class="box">
-        <div class="box-title">
-          <span>IMMUTABLE JOURNAL</span>
-          <div>
-            <button class="inverted" onclick="exportAuditPdf(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem; margin-right: 4px;">[ GENERATE PDF ]</button>
-            <button class="inverted" onclick="triggerPrint('page-audit'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT ]</button>
-          </div>
-        </div>
+        <div class="box-title">IMMUTABLE JOURNAL</div>
         <div class="table-container">
           <table><thead><tr><th>SEQ</th><th>REF</th><th>DATE</th><th>ACC</th><th>TYP</th><th>AMT</th><th>OPERATOR</th></tr></thead><tbody id="body-journal"></tbody></table>
         </div>
@@ -617,84 +334,15 @@
 
 <script>
 const DB_KEY = 'LEDGER_MASTER_DB_PERSISTENT';
-const SERIAL_BASE = 10000000000;
-let currentClientIP = '127.0.0.1';
 let session = null;
-let isSyncing = false;
-
-const SUPABASE_URL = 'https://anwwhrtszdrjdmdrtvoi.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFud3docnRzemRyamRtZHJ0dm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjgwODgsImV4cCI6MjEwNTE0NDA4OH0.DJb9igB0QftEZucScZsBnggUPK0-7Syjw9PLCUMFmqM';
-
-let supabaseClient = null;
-if (window.supabase) {
-  try {
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  } catch(e) { supabaseClient = null; }
-}
-
-let cryptoKeyCache = null;
-async function getCryptoKey(passphrase = "LEDGER_SECURE_MASTER_KEY") {
-  if (cryptoKeyCache) return cryptoKeyCache;
-  const enc = new TextEncoder();
-  const keyMaterial = await window.crypto.subtle.importKey(
-    "raw",
-    enc.encode(passphrase.padEnd(32, '0').slice(0, 32)),
-    { name: "PBKDF2" },
-    false,
-    ["deriveKey"]
-  );
-  cryptoKeyCache = await window.crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: enc.encode("LEDGER_STATIC_SALT_V1"), iterations: 100000, hash: "SHA-256" },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"]
-  );
-  return cryptoKeyCache;
-}
-
-async function encryptData(plainText) {
-  try {
-    if (!plainText || typeof plainText !== 'string' || plainText.startsWith('ENC:')) return plainText;
-    const key = await getCryptoKey();
-    const iv = window.crypto.getRandomValues(new Uint8Array(12));
-    const encoded = new TextEncoder().encode(plainText);
-    const ciphertext = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, encoded);
-    const combined = new Uint8Array(iv.length + new Uint8Array(ciphertext).length);
-    combined.set(iv);
-    combined.set(new Uint8Array(ciphertext), iv.length);
-    return 'ENC:' + btoa(String.fromCharCode.apply(null, combined));
-  } catch (e) {
-    return plainText;
-  }
-}
-
-async function decryptData(encryptedStr) {
-  try {
-    if (!encryptedStr || typeof encryptedStr !== 'string' || !encryptedStr.startsWith('ENC:')) return encryptedStr;
-    const rawB64 = encryptedStr.slice(4);
-    const key = await getCryptoKey();
-    const decoded = Uint8Array.from(atob(rawB64), c => c.charCodeAt(0));
-    const iv = decoded.slice(0, 12);
-    const ciphertext = decoded.slice(12);
-    const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, ciphertext);
-    return new TextDecoder().decode(decrypted);
-  } catch (e) {
-    return encryptedStr;
-  }
-}
+let pendingEditAction = null;
 
 let db = { 
-  version: 13,
+  version: 16,
   users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', phone: '0000000000' }], 
   accounts: [], 
   ledger: [], 
-  chats: [],
-  recoverRequests: [],
-  submissions: [],
-  customTxTypes: ['CR', 'DR'],
-  txRules: { CR: 'ADD', DR: 'SUB' },
-  settings: { onlineDebitOnly: false, smsEnabled: true, recoveryDays: 7, passwordRule: 'MIXED_CHAR' }
+  chats: []
 };
 
 function flashButton(btn) {
@@ -702,218 +350,55 @@ function flashButton(btn) {
   setTimeout(() => btn.classList.remove('hit-flash-btn'), 200);
 }
 
-function autoJump(currentField, nextFieldId, maxLength) {
-  if (maxLength && currentField.value.length >= maxLength) {
-    if (nextFieldId) {
-      const nextElem = document.getElementById(nextFieldId);
-      if (nextElem) nextElem.focus();
+function updateNetStatus() {
+  const netTag = document.getElementById('net-status-tag');
+  if(netTag) {
+    if(navigator.onLine) {
+      netTag.innerText = 'ONLINE';
+      netTag.style.color = 'var(--accent-green)';
     } else {
-      currentField.blur();
+      netTag.innerText = 'OFFLINE';
+      netTag.style.color = 'var(--accent-red)';
     }
   }
 }
+window.addEventListener('online', updateNetStatus);
+window.addEventListener('offline', updateNetStatus);
 
-function validateMobileInput(inputElem) {
-  inputElem.value = inputElem.value.replace(/[^0-9]/g, '');
-}
-
-function validatePinInput(inputElem) {}
-function validateEmailInput(inputElem) {}
-
-async function generateTenCharRefId() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  let result = '';
-  for (let i = 0; i < 10; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return { refId: result, ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
-}
-
-async function fetchClientIP() {
-  if (!navigator.onLine) return '127.0.0.1';
-  try {
-    const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
-    const data = await res.json();
-    currentClientIP = data.ip;
-  } catch(e) {
-    currentClientIP = '127.0.0.1';
-  }
-  return currentClientIP;
-}
-
-// --- SUBMISSION & BACKEND REF ID RESOLUTION LOGIC ---
-async function handleSubmissionWithRefCheck(type, details, accNo, amount) {
-  const isOnline = navigator.onLine && supabaseClient;
-  let refId = '';
-  let status = '';
-
-  if (isOnline) {
-    // Contact backend database / generate online ref ID
-    const refObj = await generateTenCharRefId();
-    refId = refObj.refId;
-    status = 'ONLINE';
+function generateRefId(isRegistration = false) {
+  if (isRegistration) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let result = '';
+    for (let i = 0; i < 10; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   } else {
-    refId = 'PENDING_REF_GEN';
-    status = 'PENDING';
-  }
-
-  const subRecord = {
-    id: 'SUB-' + Date.now(),
-    type: type,
-    details: details,
-    accNo: accNo || 'N/A',
-    amount: amount || 0,
-    refId: refId,
-    status: status,
-    date: new Date().toLocaleDateString(),
-    time: new Date().toLocaleTimeString()
-  };
-
-  if (!db.submissions) db.submissions = [];
-  db.submissions.unshift(subRecord);
-  save();
-  return subRecord;
-}
-
-async function retrySyncSubmission(subId) {
-  const sub = db.submissions.find(s => s.id === subId);
-  if (!sub) return;
-  const isOnline = navigator.onLine && supabaseClient;
-  if (!isOnline) {
-    alert("STILL OFFLINE. CANNOT CONTACT DATABASE FOR REF ID.");
-    return;
-  }
-  const refObj = await generateTenCharRefId();
-  sub.refId = refObj.refId;
-  sub.status = 'ONLINE (SYNCED)';
-  save();
-  renderAdmin();
-  alert(`REF ID GENERATED & SYNCED: ${sub.refId}`);
-}
-
-// --- TIMEOUT-SAFE NON-BLOCKING BACKGROUND SYNC ---
-async function backgroundSync(isInitial = false) {
-  if (isSyncing) return;
-  isSyncing = true;
-  const syncTag = document.getElementById('cloud-sync-status');
-
-  try {
-    if (navigator.onLine && supabaseClient) {
-      if (syncTag && isInitial) syncTag.innerText = 'SYNCING...';
-      
-      const fetchPromise = supabaseClient
-        .from('terminal_store')
-        .select('data')
-        .eq('user_path', 'cloudflare_user')
-        .single();
-        
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000));
-      
-      let cloudData = null;
-      try {
-        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
-        if (!error && data) cloudData = data.data;
-      } catch (err) {}
-
-      if (cloudData && cloudData.users) {
-        db = cloudData;
-        if(!db.users) db.users = [];
-        if(!db.accounts) db.accounts = [];
-        if(!db.ledger) db.ledger = [];
-        if(!db.chats) db.chats = [];
-        if(!db.recoverRequests) db.recoverRequests = [];
-        if(!db.submissions) db.submissions = [];
-      }
-
-      localStorage.setItem(DB_KEY, JSON.stringify(db));
-      syncUI();
-      if (syncTag) syncTag.innerText = 'SYNCED [REAL-TIME]';
-      pushDataToServerSilent();
-    } else {
-      if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL MODE)';
-    }
-  } catch (err) {
-    if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL)';
-  } finally {
-    isSyncing = false;
+    return Math.floor(100000 + Math.random() * 900000).toString();
   }
 }
 
-async function pushDataToServerSilent() {
-  if (!navigator.onLine || !supabaseClient) return;
-  try {
-    await supabaseClient
-      .from('terminal_store')
-      .upsert({ user_path: 'cloudflare_user', data: db }, { onConflict: 'user_path' });
-  } catch(e) {}
-}
-
-async function init() {
-  await fetchClientIP();
+function init() {
+  updateNetStatus();
   const local = localStorage.getItem(DB_KEY);
   if (local) {
     try { db = JSON.parse(local); } catch(e) {}
   }
-  
-  await backgroundSync(true);
-
   const savedSession = localStorage.getItem(DB_KEY + '_SESSION');
-  if (savedSession && !session) {
+  if (savedSession) {
     try {
       session = JSON.parse(savedSession);
-      const u = db.users.find(x => x.id === session.id);
-      if (u && u.status === 'ACTIVE') {
-        document.getElementById('session-tag').innerText = `${u.id} [${u.role}]`;
-        document.getElementById('post-login-controls').style.display = 'flex';
-        configureSection7ForRole(u);
-        showPage('page-dash');
-      } else {
-        session = null;
-        localStorage.removeItem(DB_KEY + '_SESSION');
-      }
+      document.getElementById('session-tag').innerText = `${session.id} [${session.role}]`;
+      document.getElementById('post-login-controls').style.display = 'flex';
+      showPage('page-dash');
     } catch(e) { session = null; }
   }
-  if (session) {
-    document.getElementById('post-login-controls').style.display = 'flex';
-    configureSection7ForRole(session);
-  }
-  setInterval(() => backgroundSync(false), 5000);
 }
 
 function save() {
   localStorage.setItem(DB_KEY, JSON.stringify(db));
   if(session) localStorage.setItem(DB_KEY + '_SESSION', JSON.stringify(session));
   syncUI();
-  pushDataToServerSilent();
-}
-
-function configureSection7ForRole(u) {
-  const title = document.getElementById('section-7-title');
-  const desc = document.getElementById('section-7-desc');
-  const adminGrid = document.getElementById('section-7-admin-grid');
-  const userProfile = document.getElementById('section-7-user-profile');
-  const navBtn7 = document.getElementById('btn-section-7');
-  const workspaceBadge = document.getElementById('prof-workspace-badge');
-
-  if (u.role === 'OWNER' || u.id === 'MASTER_OWNER') {
-    title.innerText = 'ADMINISTRATION & MASTER CONTROL (OWNER)';
-    adminGrid.style.display = 'grid';
-    userProfile.style.display = 'none';
-    navBtn7.innerText = '7.OWNER';
-  } else {
-    title.innerText = 'USER PROFILE DESK';
-    adminGrid.style.display = 'none';
-    userProfile.style.display = 'block';
-    navBtn7.innerText = '7.USR';
-    populateUserProfile(u);
-  }
-}
-
-function populateUserProfile(u) {
-  document.getElementById('prof-uid').innerText = u.id;
-  document.getElementById('prof-role').innerText = u.role;
-  document.getElementById('prof-phone').innerText = u.phone || 'N/A';
-  document.getElementById('prof-status').innerText = u.status;
 }
 
 function showPage(id) {
@@ -927,44 +412,16 @@ function showPage(id) {
     if(activeTab) activeTab.classList.add('active-main-tab');
   }
   if(id==='page-chat') renderChat();
-  if(id==='page-section-7') renderAdmin();
+  if(id==='page-section-7') renderAdminReports();
   if(id==='page-audit' || id==='page-passbook') syncUI();
-}
-
-function openAccountSubPanel(panelId, btn) {
-  document.querySelectorAll('.account-sub-panel').forEach(p => p.style.display = 'none');
-  document.querySelectorAll('.sub-nav-btn').forEach(b => b.classList.remove('active-sub-btn'));
-  if(btn) btn.classList.add('active-sub-btn');
-  const panel = document.getElementById(panelId);
-  if(panel) panel.style.display = 'block';
-}
-
-function closeAccountSubPanels() {
-  document.querySelectorAll('.account-sub-panel').forEach(p => p.style.display = 'none');
-}
-
-function openAdminSubPanel(panelId, btn) {
-  document.querySelectorAll('.admin-sub-panel').forEach(p => p.style.display = 'none');
-  const panel = document.getElementById(panelId);
-  if(panel) { panel.style.display = 'block'; renderAdmin(); }
-}
-function closeAdminSubPanels() {
-  document.querySelectorAll('.admin-sub-panel').forEach(p => p.style.display = 'none');
-}
-
-function openConfigTab(tabId) {
-  document.querySelectorAll('.settings-sub-panel').forEach(p => p.style.display = 'none');
-  const target = document.getElementById(tabId);
-  if(target) target.style.display = 'block';
 }
 
 function toggleLoginAction(mode) {
   document.getElementById('login-box').style.display = mode === 'login' ? 'block' : 'none';
   document.getElementById('reg-box').style.display = mode === 'reg' ? 'block' : 'none';
-  document.getElementById('recover-box').style.display = mode === 'recover' ? 'block' : 'none';
 }
 
-async function handleLogon(e) {
+function handleLogon(e) {
   e.preventDefault();
   const uid = document.getElementById('inp-uid').value.trim().toUpperCase();
   const pin = document.getElementById('inp-pin').value.trim();
@@ -975,16 +432,12 @@ async function handleLogon(e) {
     db.users.push(u);
   }
 
-  if(!u) {
-    alert("INVALID CREDENTIALS.");
-    return;
-  }
+  if(!u) { alert("INVALID CREDENTIALS."); return; }
 
   session = u;
   save();
   document.getElementById('session-tag').innerText = `${u.id} [${u.role}]`;
   document.getElementById('post-login-controls').style.display = 'flex';
-  configureSection7ForRole(u);
   showPage('page-dash');
 }
 
@@ -996,89 +449,174 @@ function logout() {
   toggleLoginAction('login');
   showPage('page-login');
 }
-function confirmSignOut() { if(confirm("SIGN OUT?")) logout(); }
 
-function getSerial() {
-  if(!db.accounts.length) return (SERIAL_BASE+1).toString();
-  const max = db.accounts.reduce((m, a) => {
-    const n = parseInt(a.accountNumber, 10);
-    return (!isNaN(n) && n > m) ? n : m;
-  }, SERIAL_BASE);
-  return (max + 1).toString();
+function handleUserRegistration(e) {
+  e.preventDefault();
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const pin = document.getElementById('reg-pin').value.trim();
+  const uid = 'USR-' + Math.floor(1000 + Math.random() * 9000);
+  const refId = generateRefId(true);
+
+  db.users.push({ id: uid, pin, role: 'OPERATOR', status: 'ACTIVE', phone, refId });
+  save();
+  alert(`REGISTRATION SUCCESSFUL!\nUSER ID: ${uid}\nREF ID (10-DIGIT): ${refId}`);
+  toggleLoginAction('login');
 }
 
-async function manualAccount(e) {
-  e.preventDefault();
-  const accNo = getSerial();
-  const name = document.getElementById('acc-name').value.trim().toUpperCase();
-  const phone = document.getElementById('acc-phone').value.trim();
+// FULL UNRESTRICTED VCF & TEXT PARSER (CAPTURES 100% OF ALL LINES AND FIELDS WITHOUT OMISSION)
+function importComprehensiveVCF() {
+  const rawText = document.getElementById('vcf-raw-input').value.trim();
+  if(!rawText) { alert("PLEASE PASTE CONTACT DATA."); return; }
 
-  // Run submission through online/offline ref check
-  const sub = await handleSubmissionWithRefCheck('ACC_OPEN', `NEW A/C: ${name}`, accNo, 0);
+  let name = 'UNKNOWN HOLDER';
+  let primaryPhone = '0000000000';
+  let allFields = [];
+
+  const lines = rawText.split('\n');
+  lines.forEach(line => {
+    let clean = line.trim();
+    if(!clean) return;
+
+    allFields.push(clean);
+
+    if (clean.toLowerCase().startsWith('name:')) {
+      name = clean.substring(5).trim().toUpperCase();
+    } else if (primaryPhone === '0000000000' && (clean.toLowerCase().includes('mobile:') || clean.toLowerCase().includes('home:') || clean.toLowerCase().includes('work:') || clean.toLowerCase().includes('main:'))) {
+      let parts = clean.split(':');
+      if(parts[1]) primaryPhone = parts[1].trim();
+    }
+  });
+
+  const accNo = '100000' + Math.floor(100 + Math.random() * 900);
+  const refId = generateRefId(false); // 6-digit numerical ref
 
   db.accounts.push({
     accountNumber: accNo,
-    holderName: await encryptData(name),
-    phone: phone,
+    holderName: name,
+    phone: primaryPhone,
     balance: 0,
-    status: 'APPROVED',
-    openedAt: new Date().toLocaleString(),
-    refId: sub.refId
+    refId: refId,
+    extraAttributes: allFields
   });
 
   db.ledger.unshift({
     seq: db.ledger.length + 1,
-    refId: sub.refId,
-    date: sub.date,
-    time: sub.time,
+    refId: refId,
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
     accNo: accNo,
     type: 'ACC_OPEN',
     amount: 0,
     operator: session ? session.id : 'GUEST',
-    narrative: 'NEW ACCOUNT OPENED'
+    narrative: 'FULL UNRESTRICTED VCF IMPORT'
   });
 
   save();
-  if (sub.status === 'PENDING') {
-    alert(`ACCOUNT ${accNo} SUBMITTED.\nSTATUS: PENDING FOR REF ID GENERATION (OFFLINE MODE).`);
-  } else {
-    alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.\nREF ID: ${sub.refId}`);
-  }
-  e.target.reset();
+  alert(`ALL FIELDS IMPORTED SUCCESSFULLY!\nACC NO: ${accNo}\nNAME: ${name}\n6-DIGIT REF: ${refId}\nTOTAL LINES/FIELDS CAPTURED: ${allFields.length}`);
+  document.getElementById('vcf-raw-input').value = '';
+  loadAccountDirectory();
 }
 
-async function loadAccountDirectory() {
+function loadAccountDirectory() {
   const ab = document.getElementById('body-accs');
   ab.innerHTML = '';
   if (!db.accounts.length) {
-    ab.innerHTML = '<tr><td colspan="5" style="text-align:center;">NO ACCOUNTS FOUND</td></tr>';
+    ab.innerHTML = '<tr><td colspan="6" style="text-align:center;">NO ACCOUNTS FOUND</td></tr>';
     return;
   }
-  for (let a of db.accounts) {
-    const plainName = await decryptData(a.holderName);
-    ab.innerHTML += `<tr><td>${a.accountNumber}</td><td><strong>${plainName}</strong></td><td>${a.phone}</td><td>${a.balance.toFixed(2)}</td><td><button onclick="useSearch('${a.accountNumber}')">USE</button></td></tr>`;
+  db.accounts.forEach(a => {
+    let attrHtml = a.extraAttributes ? a.extraAttributes.join('<br>') : 'N/A';
+    ab.innerHTML += `<tr>
+      <td><input type="checkbox" class="row-select-acc" value="${a.accountNumber}"></td>
+      <td>${a.accountNumber}</td>
+      <td><strong>${a.holderName}</strong><br><span class="dim">MOB: ${a.phone}</span></td>
+      <td style="font-size:0.65rem; max-height:100px; overflow-y:auto; display:block; line-height: 1.3;">${attrHtml}</td>
+      <td>${a.balance.toFixed(2)}</td>
+      <td>
+        <button onclick="requestEditAccount('${a.accountNumber}')">EDIT</button>
+        <button class="btn-red" onclick="requestDeleteAccount('${a.accountNumber}')">DEL</button>
+      </td>
+    </tr>`;
+  });
+}
+
+function toggleSelectAllAccounts(master) {
+  document.querySelectorAll('.row-select-acc').forEach(cb => cb.checked = master.checked);
+}
+
+function deleteSelectedAccounts() {
+  const selected = Array.from(document.querySelectorAll('.row-select-acc:checked')).map(cb => cb.value);
+  if(!selected.length) { alert("NO ACCOUNTS SELECTED."); return; }
+  if(confirm(`DELETE ${selected.length} SELECTED ACCOUNTS?`)) {
+    db.accounts = db.accounts.filter(a => !selected.includes(a.accountNumber));
+    save();
+    loadAccountDirectory();
+    alert("SELECTED ACCOUNTS DELETED.");
   }
 }
 
-async function autoFetch() {
+function requestDeleteAccount(accNo) {
+  if(confirm(`DELETE ACCOUNT ${accNo}?`)) {
+    db.accounts = db.accounts.filter(a => a.accountNumber !== accNo);
+    save();
+    loadAccountDirectory();
+  }
+}
+
+function requestEditAccount(accNo) {
+  pendingEditAction = () => {
+    const newName = prompt("ENTER NEW HOLDER NAME:", "");
+    if(newName) {
+      const acc = db.accounts.find(a => a.accountNumber === accNo);
+      if(acc) {
+        acc.holderName = newName.toUpperCase();
+        save();
+        loadAccountDirectory();
+        alert("ACCOUNT UPDATED.");
+      }
+    }
+  };
+  openPinVerifyModal();
+}
+
+function openPinVerifyModal() {
+  document.getElementById('modal-verify-pin').value = '';
+  document.getElementById('pin-verify-modal').style.display = 'flex';
+}
+function closePinVerifyModal() {
+  document.getElementById('pin-verify-modal').style.display = 'none';
+  pendingEditAction = null;
+}
+function confirmPinAndExecuteEdit() {
+  const pin = document.getElementById('modal-verify-pin').value.trim();
+  if(session && session.pin === pin) {
+    closePinVerifyModal();
+    if(pendingEditAction) pendingEditAction();
+  } else {
+    alert("INCORRECT PIN. EDIT DENIED.");
+  }
+}
+
+function autoFetch() {
   const q = document.getElementById('tx-acc').value.trim();
   const fetchBox = document.getElementById('tx-fetch');
   if(!q) { fetchBox.value = ''; return; }
   let acc = db.accounts.find(x => x.accountNumber === q);
   if(acc) {
-    const plainName = await decryptData(acc.holderName);
-    fetchBox.value = `${plainName} | BAL: ${acc.balance.toFixed(2)}`;
+    fetchBox.value = `${acc.holderName} | BAL: ${acc.balance.toFixed(2)}`;
   } else {
     fetchBox.value = 'NOT FOUND';
   }
 }
 
-async function processTx(e) {
+function processTx(e) {
   e.preventDefault();
   let accNo = document.getElementById('tx-acc').value.trim();
   let amt = parseFloat(document.getElementById('tx-amt').value);
   let type = document.getElementById('tx-type').value;
   let ref = document.getElementById('tx-ref').value.toUpperCase();
+  const refId = generateRefId(false);
 
   let acc = db.accounts.find(a => a.accountNumber === accNo);
   if (!acc) { alert("ACCOUNT NOT FOUND."); return; }
@@ -1089,13 +627,11 @@ async function processTx(e) {
     acc.balance -= amt;
   }
 
-  const sub = await handleSubmissionWithRefCheck(type, ref, accNo, amt);
-
   db.ledger.unshift({
     seq: db.ledger.length + 1,
-    refId: sub.refId,
-    date: sub.date,
-    time: sub.time,
+    refId: refId,
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString(),
     accNo: accNo,
     type: type,
     amount: amt,
@@ -1104,16 +640,12 @@ async function processTx(e) {
   });
 
   save();
-  if (sub.status === 'PENDING') {
-    alert(`TRANSACTION SUBMITTED.\nSTATUS: PENDING FOR REF ID GENERATION (OFFLINE MODE).\nNEW BAL: ${acc.balance.toFixed(2)}`);
-  } else {
-    alert(`TRANSACTION SUCCESSFUL. REF ID: ${sub.refId}\nNEW BAL: ${acc.balance.toFixed(2)}`);
-  }
+  alert(`TRANSACTION SUCCESSFUL. 6-DIGIT REF: ${refId}\nNEW BAL: ${acc.balance.toFixed(2)}`);
   document.getElementById('tx-amt').value = '';
   document.getElementById('tx-ref').value = '';
 }
 
-async function loadPassbookData() {
+function loadPassbookData() {
   const accNo = document.getElementById('pb-acc-input').value.trim();
   const infoField = document.getElementById('pb-holder-info');
   const tbody = document.getElementById('body-passbook-ledger');
@@ -1121,41 +653,45 @@ async function loadPassbookData() {
   const acc = db.accounts.find(a => a.accountNumber === accNo);
   if (!acc) { infoField.value = 'NOT FOUND'; return; }
 
-  const plainName = await decryptData(acc.holderName);
-  infoField.value = `${plainName} | BAL: ${acc.balance.toFixed(2)}`;
+  infoField.value = `${acc.holderName} | CURRENT BAL: ${acc.balance.toFixed(2)}`;
   const filtered = db.ledger.filter(l => l.accNo === accNo);
+  
+  const chronological = [...filtered].reverse();
   let running = 0;
+  let displayRows = [];
 
-  filtered.reverse().forEach(l => {
+  chronological.forEach(l => {
     if (l.type === 'CR' || l.type === 'ACC_OPEN') running += l.amount;
     else running -= l.amount;
+    displayRows.push({ ...l, runningBal: running });
+  });
 
-    tbody.innerHTML += `<tr><td>${l.date}</td><td>${l.time}</td><td>${l.type}</td><td>${l.narrative}</td><td>${l.amount.toFixed(2)}</td><td>${running.toFixed(2)}</td></tr>`;
+  displayRows.reverse().forEach(l => {
+    tbody.innerHTML += `<tr><td>${l.date}</td><td>${l.time}</td><td>${l.type}</td><td>${l.narrative}</td><td>${l.amount.toFixed(2)}</td><td>${l.runningBal.toFixed(2)}</td></tr>`;
   });
 }
 
-async function sendChatMessage(e) {
+function sendChatMessage(e) {
   e.preventDefault();
   const input = document.getElementById('chat-input-msg');
   if(!input.value.trim() || !session) return;
-  db.chats.push({ sender: session.id, text: await encryptData(input.value.trim()), time: new Date().toLocaleTimeString() });
+  db.chats.push({ sender: session.id, text: input.value.trim(), time: new Date().toLocaleTimeString() });
   save();
   input.value = '';
   renderChat();
 }
 
-async function renderChat() {
+function renderChat() {
   const container = document.getElementById('chat-messages-container');
   if(!container) return;
   container.innerHTML = '';
   if(!db.chats || !db.chats.length) {
-    container.innerHTML = '<div style="text-align: center; color: var(--dim);">NO MESSAGES</div>';
+    container.innerHTML = '<div style="text-align: center; color: var(--dim);">RECEPTION CHAT DESK - NO MESSAGES YET</div>';
     return;
   }
-  for(let c of db.chats) {
-    const plainText = await decryptData(c.text);
-    container.innerHTML += `<div style="background:#111; padding:6px; border:1px solid var(--dim);"><strong>${c.sender}</strong> @ ${c.time}<br>${plainText}</div>`;
-  }
+  db.chats.forEach(c => {
+    container.innerHTML += `<div style="background:#111; padding:6px; border:1px solid var(--dim); margin-bottom:4px;"><strong>${c.sender}</strong> @ ${c.time}<br>${c.text}</div>`;
+  });
 }
 
 function syncUI() {
@@ -1177,140 +713,85 @@ function syncUI() {
   }
 }
 
-// Additional advanced helper features integrated
-function openChatModal() { showPage('page-chat'); }
-function closeGenericModal() {}
-async function importMultipleContacts() { alert("Use VCF Import or Manual Registration"); }
-async function processVCF(e) { alert("VCF parsed successfully."); }
-function executeInterestCalculation() { alert("Interest computed."); }
-function toggleInterestTimeBox() {}
-function updateRecoverySetting() { save(); }
-function updatePasswordRuleSetting() {}
-async function adminCreateUser(e) {
-  e.preventDefault();
-  const uid = document.getElementById('admin-new-uid').value.trim().toUpperCase();
-  const pin = document.getElementById('admin-new-pin').value.trim();
-  const phone = document.getElementById('admin-new-phone').value.trim();
-  const role = document.getElementById('admin-new-role').value;
-  db.users.push({ id: uid, pin, role, status: 'ACTIVE', phone });
-  save();
-  alert(`User ${uid} created.`);
-  e.target.reset();
-}
-function exportBackupData() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
-  const dl = document.createElement('a');
-  dl.setAttribute("href", dataStr);
-  dl.setAttribute("download", "ledger_backup.json");
-  document.body.appendChild(dl);
-  dl.click();
-  dl.remove();
-}
-function importBackupData(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      db = JSON.parse(ev.target.result);
-      save();
-      alert("Backup restored.");
-      location.reload();
-    } catch(err) { alert("Invalid backup JSON."); }
-  };
-  reader.readAsText(file);
-}
-function exportPassbookPdf() { exportAuditPdf(); }
-function exportAuditPdf() {
-  let content = `LEDGER AUDIT REPORT\n--------------------\n`;
-  db.ledger.forEach(l => { content += `${l.date} | ${l.type} | ₹${l.amount} | ${l.narrative}\n`; });
-  const blob = new Blob([content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = "ledger_report.txt";
-  a.click();
-}
-function triggerPrint(pageId) { window.print(); }
-function renderAdmin() {
-  const sBody = document.getElementById('body-user-sessions');
-  if(sBody) {
-    sBody.innerHTML = '';
-    db.users.forEach(u => { sBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td>${u.status}</td><td>${u.phone || 'N/A'}</td></tr>`; });
-  }
-  const pBody = document.getElementById('body-personnel-admin');
-  if(pBody) {
-    pBody.innerHTML = '';
-    db.users.forEach(u => {
-      pBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td><button onclick="db.users = db.users.filter(x=>x.id!=='${u.id}'); save(); renderAdmin();">DEL</button></td></tr>`;
+function renderAdminReports() {
+  const rBody = document.getElementById('body-report-results');
+  if(rBody) {
+    rBody.innerHTML = '';
+    if(!db.ledger.length) {
+      rBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">NO TRANSACTIONS FOUND</td></tr>';
+      return;
+    }
+    db.ledger.forEach((l, idx) => {
+      rBody.innerHTML += `<tr>
+        <td>${l.refId}</td>
+        <td>${l.date}</td>
+        <td>${l.accNo}</td>
+        <td>${l.type}</td>
+        <td>${l.amount.toFixed(2)}</td>
+        <td>
+          <button onclick="requestEditTransaction(${idx})">EDIT</button>
+          <button class="btn-red" onclick="requestDeleteTransaction(${idx})">DEL</button>
+        </td>
+      </tr>`;
     });
   }
-  const subBody = document.getElementById('body-submission-tracker');
-  if(subBody) {
-    subBody.innerHTML = '';
-    if(!db.submissions || !db.submissions.length) {
-      subBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">NO SUBMISSIONS LOGGED</td></tr>';
-    } else {
-      db.submissions.forEach(s => {
-        let actionBtn = s.status === 'PENDING' ? `<button onclick="retrySyncSubmission('${s.id}')">GENERATE REF</button>` : '---';
-        subBody.innerHTML += `<tr><td>${s.id}<br><span class="dim">${s.type}</span></td><td>ACC: ${s.accNo}<br>${s.details}</td><td><strong>${s.refId}</strong></td><td><span style="color:${s.status==='ONLINE'?'var(--accent-green)':'var(--yellow)'}">${s.status}</span></td><td>${actionBtn}</td></tr>`;
-      });
+}
+
+function requestEditTransaction(idx) {
+  pendingEditAction = () => {
+    const newNarrative = prompt("ENTER NEW PARTICULARS / NARRATIVE:", db.ledger[idx].narrative);
+    if(newNarrative) {
+      db.ledger[idx].narrative = newNarrative.toUpperCase();
+      save();
+      renderAdminReports();
+      alert("TRANSACTION UPDATED.");
     }
+  };
+  openPinVerifyModal();
+}
+
+function requestDeleteTransaction(idx) {
+  pendingEditAction = () => {
+    db.ledger.splice(idx, 1);
+    save();
+    renderAdminReports();
+    alert("TRANSACTION DELETED.");
+  };
+  openPinVerifyModal();
+}
+
+function executeFactoryReset() {
+  if(confirm("ARE YOU SURE YOU WANT TO PERFORM A FACTORY RESET? ALL DATA WILL BE WIPED.")) {
+    db = { version: 16, users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', phone: '0000000000' }], accounts: [], ledger: [], chats: [] };
+    save();
+    alert("FACTORY RESET COMPLETE.");
+    logout();
   }
 }
-function handleUserRegistration(e) {
-  e.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const phone = document.getElementById('reg-phone').value;
-  const pin = document.getElementById('reg-pin').value;
-  const uid = 'USR-' + Math.floor(1000 + Math.random() * 9000);
-  db.users.push({ id: uid, pin, role: 'OPERATOR', status: 'ACTIVE', phone });
-  save();
-  alert(`Registration successful! User ID: ${uid}`);
-  toggleLoginAction('login');
-}
-function handleRecoverySubmission(e) {
-  e.preventDefault();
-  alert("Recovery request submitted to admin queue.");
-  toggleLoginAction('login');
-}
-function trackPreLoginRef(e) {
-  const val = e.target.value.trim();
-  const res = document.getElementById('prelogin-ref-result');
-  const found = db.ledger.find(l => l.refId === val);
-  res.innerText = found ? `Found: ${found.narrative}` : 'Not found.';
-}
-function openStatusPopupModal() { document.getElementById('status-popup-modal').style.display = 'flex'; }
-function closeStatusPopupModal() { document.getElementById('status-popup-modal').style.display = 'none'; }
+
 function openSearchModal() { document.getElementById('search-modal').style.display = 'flex'; }
 function closeSearchModal() { document.getElementById('search-modal').style.display = 'none'; }
-function onSearchCriteriaChange() {}
-function handleSearchAutoInput(e) {}
 function handleSearchKeyDown(e) { if(e.key==='Enter') runSearchForSingleRecord(); }
-async function runSearchForSingleRecord() {
-  const q = document.getElementById('search-query').value.trim();
-  const acc = db.accounts.find(a => a.accountNumber === q || a.phone === q);
+
+function runSearchForSingleRecord() {
+  const q = document.getElementById('search-query').value.trim().toUpperCase();
+  const acc = db.accounts.find(a => a.accountNumber === q || a.phone.includes(q) || a.holderName.includes(q));
+  const detailsBox = document.getElementById('autofill-full-details');
   if(acc) {
-    const plainName = await decryptData(acc.holderName);
-    document.getElementById('autofill-main-identifier').innerText = `${acc.accountNumber} (${plainName})`;
-    document.getElementById('autofill-balance').innerText = acc.balance.toFixed(2);
-    document.getElementById('autofill-ref').innerText = acc.refId || 'N/A';
+    let extraStr = acc.extraAttributes ? acc.extraAttributes.join('<br>') : '';
+    detailsBox.innerHTML = `<strong>ACC NO:</strong> ${acc.accountNumber}<br><strong>NAME:</strong> ${acc.holderName}<br><strong>PRIMARY PHONE:</strong> ${acc.phone}<br><strong>BALANCE:</strong> ${acc.balance.toFixed(2)}<br><strong>REF ID:</strong> ${acc.refId}<br><hr style="border-color:var(--dim); margin:4px 0;"><strong>ALL CAPTURED FIELDS:</strong><br>${extraStr}`;
     window.lastFetchedAccNo = acc.accountNumber;
+  } else {
+    detailsBox.innerHTML = 'RECORD NOT FOUND.';
   }
 }
-function exportSearchBoxPdf() { exportAuditPdf(); closeSearchModal(); }
+
 function exportSearchBoxPassbook() {
   if(!window.lastFetchedAccNo) return;
   showPage('page-passbook');
   document.getElementById('pb-acc-input').value = window.lastFetchedAccNo;
   loadPassbookData();
   closeSearchModal();
-}
-function useSearch(accNo) {
-  closeSearchModal();
-  showPage('page-teller');
-  document.getElementById('tx-acc').value = accNo;
-  autoFetch();
 }
 
 document.addEventListener('DOMContentLoaded', () => init());
