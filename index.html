@@ -190,6 +190,17 @@
   </div>
 </div>
 
+<!-- GENERIC CENTERED POPUP MODAL FOR CHAT / WINDOWS -->
+<div id="generic-centered-modal">
+  <div class="box" id="generic-modal-box" style="width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; background: var(--bg); border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+    <div class="box-title">
+      <span id="generic-modal-title">MODAL DESK</span>
+      <span onclick="closeGenericModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
+    </div>
+    <div id="generic-modal-body" style="display:flex; flex-direction:column; gap:8px;"></div>
+  </div>
+</div>
+
 <div class="prs-terminal">
 
   <!-- STATIC UPPER DOCK -->
@@ -204,7 +215,7 @@
 
     <div class="post-login-controls" id="post-login-controls">
       <div class="mid-action-bar" id="mid-action-bar">
-        <button class="btn-msg" onclick="openChatModal(); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="badge" style="display:none; margin-left:4px;">0</span></button>
+        <button class="btn-msg" onclick="openChatModal(); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="msg-badge" style="display:inline-block; margin-left:4px;">0</span></button>
         <button onclick="openSearchModal(); flashButton(this);">🔍 SEARCH DIRECTORY</button>
       </div>
 
@@ -316,7 +327,6 @@
       </div>
     </div>
 
-    <!-- Dash Page -->
     <div class="view-page" id="page-dash">
       <div class="grid-3">
         <div class="box"><div class="box-title">DEPOSITS (CR)</div><div class="stat-val" id="val-dep">0.00</div></div>
@@ -325,7 +335,6 @@
       </div>
     </div>
 
-    <!-- Accounts Page -->
     <div class="view-page" id="page-acc">
       <div class="box">
         <div class="box-title">ACCOUNTS MANAGEMENT DESK</div>
@@ -400,7 +409,6 @@
       </div>
     </div>
 
-    <!-- Teller Page -->
     <div class="view-page" id="page-teller">
       <div class="box">
         <div class="box-title">TRANSACTION CLEARING DESK</div>
@@ -420,7 +428,6 @@
       </div>
     </div>
 
-    <!-- Passbook Page -->
     <div class="view-page" id="page-passbook">
       <div class="box">
         <div class="box-title">
@@ -443,26 +450,6 @@
       </div>
     </div>
 
-    <!-- Chat Page (Section 5) - Broadcast Channel -->
-    <div class="view-page" id="page-chat">
-      <div class="box" style="height: 75vh; display: flex; flex-direction: column; gap: 8px; position: relative;">
-        <div class="box-title">
-          <span>INTERNAL SECURE CHAT DESK // BROADCAST</span> 
-          <span class="dim">CONNECTED</span>
-        </div>
-        
-        <div class="chat-box" id="chat-messages-container" style="flex:1; overflow-y:auto; border:1px dashed var(--dim); padding:6px; display:flex; flex-direction:column; gap:6px;">
-          <div style="text-align: center; color: var(--dim);">NO MESSAGES</div>
-        </div>
-
-        <form onsubmit="sendChatMessage(event)" style="display: flex; gap: 6px; background: var(--bg); padding-top: 6px; border-top: 1px solid var(--fg);">
-          <input type="text" id="chat-input-msg" placeholder="TYPE BROADCAST MESSAGE..." required autocomplete="off" style="flex: 1; padding: 10px;" />
-          <button type="submit" class="inverted" style="padding: 10px 16px;">[ SEND ]</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- SECTION 7 (ADMIN DESK) -->
     <div class="view-page" id="page-section-7">
       <div class="box" id="section-7-container">
         <div class="box-title"><span id="section-7-title">ADMINISTRATION & MASTER CONTROL</span></div>
@@ -475,6 +462,7 @@
           <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-recovery-req', this)">[4] PASSWORD RECOVERY QUEUE</button>
           <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-reports', this)">[5] TRANSACTION REPORTS</button>
           <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-personnel', this)">[6] USER MGMT & BACKUP</button>
+          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-submission-tracker', this)">[7] SUBMISSION & REF TRACKER</button>
         </div>
 
         <div id="section-7-user-profile" style="display:none; padding: 10px;">
@@ -485,11 +473,6 @@
             <div><span class="dim">PHONE:</span> <span id="prof-phone" class="bold">---</span></div>
             <div><span class="dim">STATUS:</span> <span id="prof-status" class="bold">---</span></div>
           </div>
-        </div>
-
-        <!-- System Version Info Displayed in Admin / About Desk -->
-        <div style="margin: 10px 0; padding: 6px; border: 1px dashed var(--dim); font-size: 0.7rem; display: flex; justify-content: space-between;">
-          <span>SYSTEM CORE VERSION:</span> <span class="bold" style="color: var(--yellow);">LEDGER-OS V2.6.0-PROD</span>
         </div>
 
         <div style="margin-top: 12px; border-top: 1px dashed var(--fg); padding-top: 10px;">
@@ -600,10 +583,20 @@
             <table><thead><tr><th>USER ID</th><th>ROLE / STATUS</th><th>ACTIONS</th></tr></thead><tbody id="body-personnel-admin"></tbody></table>
           </div>
         </div>
+
+        <div id="panel-submission-tracker" class="admin-sub-panel">
+          <div class="box-title"><span>SUBMISSION & REF STATUS TRACKER</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <p class="dim" style="font-size: 0.65rem; margin-bottom: 6px;">SHOWS SUBMISSION STATUS (OFFLINE, ONLINE, PENDING) AND REF ID GENERATION.</p>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>ID / TYPE</th><th>ACC / DETAIL</th><th>REF ID</th><th>STATUS</th><th>ACTION</th></tr></thead>
+              <tbody id="body-submission-tracker"><tr><td colspan="5" style="text-align:center;">NO SUBMISSIONS LOGGED</td></tr></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Audit Page -->
     <div class="view-page" id="page-audit">
       <div class="box">
         <div class="box-title">
@@ -624,14 +617,13 @@
 
 <script>
 const DB_KEY = 'LEDGER_MASTER_DB_PERSISTENT';
-const TERMINAL_VERSION = 'LEDGER-OS V2.6.0-PROD';
 const SERIAL_BASE = 10000000000;
 let currentClientIP = '127.0.0.1';
 let session = null;
 let isSyncing = false;
 
 const SUPABASE_URL = 'https://anwwhrtszdrjdmdrtvoi.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFud3docnzsZmdyamRydHZvaSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzg5NTY4MDg4LCJleHAiOjIxMDUxNDQwODh9.DJb9igB0QftEZucScZsBnggUPK0-7Syjw9PLCUMFmqM';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFud3docnRzemRyamRtZHJ0dm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjgwODgsImV4cCI6MjEwNTE0NDA4OH0.DJb9igB0QftEZucScZsBnggUPK0-7Syjw9PLCUMFmqM';
 
 let supabaseClient = null;
 if (window.supabase) {
@@ -693,13 +685,13 @@ async function decryptData(encryptedStr) {
 }
 
 let db = { 
-  version: 12,
-  terminalVersion: TERMINAL_VERSION,
+  version: 13,
   users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', phone: '0000000000' }], 
   accounts: [], 
   ledger: [], 
   chats: [],
   recoverRequests: [],
+  submissions: [],
   customTxTypes: ['CR', 'DR'],
   txRules: { CR: 'ADD', DR: 'SUB' },
   settings: { onlineDebitOnly: false, smsEnabled: true, recoveryDays: 7, passwordRule: 'MIXED_CHAR' }
@@ -749,7 +741,57 @@ async function fetchClientIP() {
   return currentClientIP;
 }
 
-// --- TIMEOUT-SAFE NON-BLOCKING BACKGROUND SYNC & INITIAL PULL ---
+// --- SUBMISSION & BACKEND REF ID RESOLUTION LOGIC ---
+async function handleSubmissionWithRefCheck(type, details, accNo, amount) {
+  const isOnline = navigator.onLine && supabaseClient;
+  let refId = '';
+  let status = '';
+
+  if (isOnline) {
+    // Contact backend database / generate online ref ID
+    const refObj = await generateTenCharRefId();
+    refId = refObj.refId;
+    status = 'ONLINE';
+  } else {
+    refId = 'PENDING_REF_GEN';
+    status = 'PENDING';
+  }
+
+  const subRecord = {
+    id: 'SUB-' + Date.now(),
+    type: type,
+    details: details,
+    accNo: accNo || 'N/A',
+    amount: amount || 0,
+    refId: refId,
+    status: status,
+    date: new Date().toLocaleDateString(),
+    time: new Date().toLocaleTimeString()
+  };
+
+  if (!db.submissions) db.submissions = [];
+  db.submissions.unshift(subRecord);
+  save();
+  return subRecord;
+}
+
+async function retrySyncSubmission(subId) {
+  const sub = db.submissions.find(s => s.id === subId);
+  if (!sub) return;
+  const isOnline = navigator.onLine && supabaseClient;
+  if (!isOnline) {
+    alert("STILL OFFLINE. CANNOT CONTACT DATABASE FOR REF ID.");
+    return;
+  }
+  const refObj = await generateTenCharRefId();
+  sub.refId = refObj.refId;
+  sub.status = 'ONLINE (SYNCED)';
+  save();
+  renderAdmin();
+  alert(`REF ID GENERATED & SYNCED: ${sub.refId}`);
+}
+
+// --- TIMEOUT-SAFE NON-BLOCKING BACKGROUND SYNC ---
 async function backgroundSync(isInitial = false) {
   if (isSyncing) return;
   isSyncing = true;
@@ -765,7 +807,7 @@ async function backgroundSync(isInitial = false) {
         .eq('user_path', 'cloudflare_user')
         .single();
         
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000));
       
       let cloudData = null;
       try {
@@ -780,13 +822,13 @@ async function backgroundSync(isInitial = false) {
         if(!db.ledger) db.ledger = [];
         if(!db.chats) db.chats = [];
         if(!db.recoverRequests) db.recoverRequests = [];
-      } else if (db.accounts.length > 0) {
-        await pushDataToServerSilent();
+        if(!db.submissions) db.submissions = [];
       }
 
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       syncUI();
       if (syncTag) syncTag.innerText = 'SYNCED [REAL-TIME]';
+      pushDataToServerSilent();
     } else {
       if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL MODE)';
     }
@@ -800,7 +842,6 @@ async function backgroundSync(isInitial = false) {
 async function pushDataToServerSilent() {
   if (!navigator.onLine || !supabaseClient) return;
   try {
-    db.terminalVersion = TERMINAL_VERSION;
     await supabaseClient
       .from('terminal_store')
       .upsert({ user_path: 'cloudflare_user', data: db }, { onConflict: 'user_path' });
@@ -971,7 +1012,9 @@ async function manualAccount(e) {
   const accNo = getSerial();
   const name = document.getElementById('acc-name').value.trim().toUpperCase();
   const phone = document.getElementById('acc-phone').value.trim();
-  const refObj = await generateTenCharRefId();
+
+  // Run submission through online/offline ref check
+  const sub = await handleSubmissionWithRefCheck('ACC_OPEN', `NEW A/C: ${name}`, accNo, 0);
 
   db.accounts.push({
     accountNumber: accNo,
@@ -980,14 +1023,14 @@ async function manualAccount(e) {
     balance: 0,
     status: 'APPROVED',
     openedAt: new Date().toLocaleString(),
-    refId: refObj.refId
+    refId: sub.refId
   });
 
   db.ledger.unshift({
     seq: db.ledger.length + 1,
-    refId: refObj.refId,
-    date: refObj.date,
-    time: refObj.time,
+    refId: sub.refId,
+    date: sub.date,
+    time: sub.time,
     accNo: accNo,
     type: 'ACC_OPEN',
     amount: 0,
@@ -996,7 +1039,11 @@ async function manualAccount(e) {
   });
 
   save();
-  alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.`);
+  if (sub.status === 'PENDING') {
+    alert(`ACCOUNT ${accNo} SUBMITTED.\nSTATUS: PENDING FOR REF ID GENERATION (OFFLINE MODE).`);
+  } else {
+    alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.\nREF ID: ${sub.refId}`);
+  }
   e.target.reset();
 }
 
@@ -1032,7 +1079,6 @@ async function processTx(e) {
   let amt = parseFloat(document.getElementById('tx-amt').value);
   let type = document.getElementById('tx-type').value;
   let ref = document.getElementById('tx-ref').value.toUpperCase();
-  const refObj = await generateTenCharRefId();
 
   let acc = db.accounts.find(a => a.accountNumber === accNo);
   if (!acc) { alert("ACCOUNT NOT FOUND."); return; }
@@ -1043,11 +1089,13 @@ async function processTx(e) {
     acc.balance -= amt;
   }
 
+  const sub = await handleSubmissionWithRefCheck(type, ref, accNo, amt);
+
   db.ledger.unshift({
     seq: db.ledger.length + 1,
-    refId: refObj.refId,
-    date: refObj.date,
-    time: refObj.time,
+    refId: sub.refId,
+    date: sub.date,
+    time: sub.time,
     accNo: accNo,
     type: type,
     amount: amt,
@@ -1056,7 +1104,11 @@ async function processTx(e) {
   });
 
   save();
-  alert(`TRANSACTION SUCCESSFUL. NEW BAL: ${acc.balance.toFixed(2)}`);
+  if (sub.status === 'PENDING') {
+    alert(`TRANSACTION SUBMITTED.\nSTATUS: PENDING FOR REF ID GENERATION (OFFLINE MODE).\nNEW BAL: ${acc.balance.toFixed(2)}`);
+  } else {
+    alert(`TRANSACTION SUCCESSFUL. REF ID: ${sub.refId}\nNEW BAL: ${acc.balance.toFixed(2)}`);
+  }
   document.getElementById('tx-amt').value = '';
   document.getElementById('tx-ref').value = '';
 }
@@ -1192,6 +1244,18 @@ function renderAdmin() {
     db.users.forEach(u => {
       pBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td><button onclick="db.users = db.users.filter(x=>x.id!=='${u.id}'); save(); renderAdmin();">DEL</button></td></tr>`;
     });
+  }
+  const subBody = document.getElementById('body-submission-tracker');
+  if(subBody) {
+    subBody.innerHTML = '';
+    if(!db.submissions || !db.submissions.length) {
+      subBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">NO SUBMISSIONS LOGGED</td></tr>';
+    } else {
+      db.submissions.forEach(s => {
+        let actionBtn = s.status === 'PENDING' ? `<button onclick="retrySyncSubmission('${s.id}')">GENERATE REF</button>` : '---';
+        subBody.innerHTML += `<tr><td>${s.id}<br><span class="dim">${s.type}</span></td><td>ACC: ${s.accNo}<br>${s.details}</td><td><strong>${s.refId}</strong></td><td><span style="color:${s.status==='ONLINE'?'var(--accent-green)':'var(--yellow)'}">${s.status}</span></td><td>${actionBtn}</td></tr>`;
+      });
+    }
   }
 }
 function handleUserRegistration(e) {
