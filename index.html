@@ -7,9 +7,18 @@
   <title>LEDGER // MASTER SECURE TERMINAL</title>
 
   <style>
-    :root { --bg: #000000; --fg: #ffffff; --dim: #888888; --yellow: #ffd700; --accent-green: #2ea043; --accent-blue: #58a6ff; --accent-red: #da3633; }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--fg); font-family: 'Courier New', Courier, monospace; min-height: 100vh; padding: 8px; display: flex; justify-content: center; text-transform: uppercase; overflow-x: hidden; }
+    :root { 
+      --bg: #000000; 
+      --fg: #ffffff; 
+      --dim: #888888; 
+      --yellow: #ffd700; 
+      --accent-green: #2ea043; 
+      --accent-blue: #58a6ff; 
+      --accent-red: #da3633; 
+      --font-family: 'Courier New', Courier, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
+    body { background: var(--bg); color: var(--fg); min-height: 100vh; padding: 8px; display: flex; justify-content: center; text-transform: uppercase; overflow-x: hidden; }
     .prs-terminal { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 70px; }
     .bold { font-weight: bold; } .dim { color: var(--dim); } .blink { animation: blinker 1s linear infinite; }
     @keyframes blinker { 50% { opacity: 0; } }
@@ -39,7 +48,6 @@
     }
 
     .active-sub-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
-    button.active-action-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; }
     button.hit-flash-btn { background: var(--accent-green) !important; color: #fff !important; transform: scale(0.98); }
     
     .nav-btn.active-main-tab { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
@@ -60,7 +68,7 @@
     .mid-action-bar button { flex: 1; font-size: 0.7rem; padding: 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--fg); }
 
     .nav-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border-bottom: 2px solid var(--fg); padding-bottom: 4px; background: var(--bg); }
-    .nav-btn { background: var(--bg); color: var(--dim); border: 1px solid var(--dim); font-size: 0.5rem; padding: 5px 1px; }
+    .nav-btn { background: var(--bg); color: var(--dim); border: 1px solid var(--dim); font-size: 0.5rem; padding: 5px 1px; text-align: center; cursor: pointer; text-transform: uppercase; }
 
     #sliding-content-container { overflow-y: auto; max-height: calc(100vh - 150px); display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
 
@@ -80,8 +88,8 @@
 
     .table-container { max-height: 280px; overflow-y: auto; border: 1px solid var(--fg); }
     table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-    th { border-bottom: 1px solid var(--fg); text-align: left; padding: 4px; position: sticky; top: 0; background: var(--bg); }
-    td { border-bottom: 1px dashed var(--dim); padding: 4px; }
+    th { border-bottom: 1px solid var(--fg); text-align: left; padding: 4px; position: sticky; top: 0; background: var(--bg); z-index: 2; }
+    td { border-bottom: 1px dashed var(--dim); padding: 4px; vertical-align: middle; }
 
     .view-page { display: none; flex-direction: column; gap: 8px; }
     .stat-val { font-size: 1.2rem; font-weight: bold; margin-top: 2px; letter-spacing: 1px; }
@@ -99,24 +107,34 @@
     .print-controls-bar label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
     .print-receipt-header { display: none; }
 
-    @media print {
-      body { background: #fff !important; color: #000 !important; }
-      .prs-terminal > *:not(.view-page), #static-upper-dock, button, form, .box-title span:last-child, .grid-2, .grid-3, .grid-4, .task-result-box, input, select, textarea, .print-controls-bar { display: none !important; }
-      .view-page { display: none !important; }
-      .view-page[style*="flex"] { display: block !important; }
-      .prs-terminal { width: 100% !important; max-width: none !important; padding: 0 !important; }
-      .box { border: none !important; padding: 0 !important; }
-      .box-title { border-bottom: 2px solid #000 !important; color: #000 !important; margin-bottom: 6px !important; }
-      .print-receipt-header { display: block !important; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #000; font-size: 0.75rem; line-height: 1.3; color: #000 !important; }
-      .table-container { max-height: none !important; overflow: visible !important; border: 1px solid #000 !important; }
-      table { width: 100% !important; border-collapse: collapse !important; }
-      th, td { border: 1px solid #000 !important; color: #000 !important; padding: 4px !important; }
-      th { background: #eee !important; }
+    .badge {
+      background-color: var(--accent-red);
+      color: white;
+      border-radius: 50%;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: bold;
     }
 
-    @media (max-width: 650px) {
-      .grid-2, .grid-3, .grid-4, .admin-menu-grid, .account-menu-grid { grid-template-columns: 1fr; }
-      .nav-bar { grid-template-columns: repeat(7, 1fr); }
+    .chat-box {
+      height: calc(65vh - 80px);
+      overflow-y: auto;
+      border: 1px dashed var(--dim);
+      padding: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chat-msg {
+      margin-bottom: 4px;
+      background: #111;
+      border: 1px solid var(--dim);
+      padding: 6px;
+    }
+    .chat-msg span {
+      color: var(--accent-yellow);
     }
   </style>
 
@@ -141,7 +159,7 @@
         </select>
       </div>
       <div>
-        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
+        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER 11-DIGIT ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
       </div>
     </div>
 
@@ -280,7 +298,7 @@
             <label class="dim" style="font-size:0.75rem;">REGISTRATION MODE:</label>
             <select id="reg-mode" style="font-size: 0.9rem; padding: 8px;" onchange="onRegModeChange()">
               <option value="DIRECT" selected>DIRECT (WITHOUT OTP)</option>
-              <option value="EMAIL_OTP">VERIFY VIA EMAIL OTP (BRAVO / SUPABASE)</option>
+              <option value="EMAIL_OTP">VERIFY VIA EMAIL OTP</option>
             </select>
           </div>
 
@@ -483,22 +501,22 @@
       </div>
     </div>
 
-    <!-- Chat Page (Section 5) - Broadcast Channel (No Recipient Input) -->
+    <!-- Chat Page (Section 5) -->
     <div class="view-page" id="page-chat">
       <div class="box" style="height: 75vh; display: flex; flex-direction: column; gap: 8px; position: relative;">
         <div class="box-title">
-          <span>INTERNAL SECURE CHAT DESK // BROADCAST</span> 
+          <span>INTERNAL SECURE CHAT DESK</span> 
           <span class="dim">CONNECTED</span>
         </div>
         
         <div class="chat-box" id="chatBox">
-          <div class="chat-msg"><span>System:</span> Welcome to secure broadcast terminal chat.</div>
+          <div class="chat-msg"><span>System:</span> Welcome to secure terminal chat.</div>
         </div>
 
         <div class="form-group" style="margin-bottom: 4px;">
-          <input type="text" class="form-input autofocus-target" id="chatInput" placeholder="TYPE BROADCAST MESSAGE..." onkeypress="handleChatEnter(event)" style="font-size: 1rem; padding: 10px;" />
+          <input type="text" class="form-input autofocus-target" id="chatInput" placeholder="TYPE MESSAGE..." onkeypress="handleChatEnter(event)" style="font-size: 1rem; padding: 10px;" />
         </div>
-        <button type="button" class="submit-btn inverted" onclick="sendChatMessage(); flashButton(this);" style="padding: 10px;">[ SEND BROADCAST MESSAGE ]</button>
+        <button type="button" class="submit-btn inverted" onclick="sendChatMessage(); flashButton(this);" style="padding: 10px;">[ SEND MESSAGE ]</button>
       </div>
     </div>
 
@@ -525,11 +543,6 @@
             <div><span class="dim">PHONE:</span> <span id="prof-phone" class="bold">---</span></div>
             <div><span class="dim">STATUS:</span> <span id="prof-status" class="bold">---</span></div>
           </div>
-        </div>
-
-        <!-- System Version Info Displayed in Admin / About Desk -->
-        <div style="margin: 10px 0; padding: 6px; border: 1px dashed var(--dim); font-size: 0.7rem; display: flex; justify-content: space-between;">
-          <span>SYSTEM CORE VERSION:</span> <span class="bold" style="color: var(--yellow);">LEDGER-OS V2.6.0-PROD</span>
         </div>
 
         <div style="margin-top: 12px; border-top: 1px dashed var(--fg); padding-top: 10px;">
@@ -691,27 +704,26 @@
           </div>
         </div>
 
-        <!-- Pending Ref ID Generation List in Admin Panel -->
         <div id="panel-personnel" class="admin-sub-panel">
-          <div class="box-title"><span>PENDING REF ID GENERATION & QUEUE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <p class="dim" style="font-size:0.65rem; margin-bottom:6px;">ITEMS PENDING UNIQUE RE-VERIFICATION OR CREATED OFFLINE:</p>
+          <div class="box-title"><span>USER EDIT, LOCK, DELETE, ROLE, TRANSFER & BACKUP</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div style="margin-bottom: 8px; display:flex; gap:6px;">
             <button class="inverted" onclick="exportBackupData(); flashButton(this);">[ EXPORT BACKUP ]</button>
             <button class="inverted" onclick="document.getElementById('backup-file-input').click()">[ RESTORE BACKUP ]</button>
             <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="importBackupData(event)" />
           </div>
+          <div style="margin-bottom: 8px;">
+            <button class="inverted" onclick="adminRecoverChats(); flashButton(this);">[ ADMIN RECOVER PURGED CHATS (60-DAY) ]</button>
+          </div>
           <div class="table-container">
             <table>
               <thead>
                 <tr>
-                  <th>PENDING ITEM / REF</th>
-                  <th>STATUS (ONLINE / OFFLINE)</th>
-                  <th>ACTION</th>
+                  <th style="width: 25%;">USER ID</th>
+                  <th style="width: 45%;">ROLE / STATUS</th>
+                  <th style="width: 30%;">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody id="body-pending-ref-queue">
-                <tr><td colspan="3" style="text-align:center;">NO PENDING GENERATIONS</td></tr>
-              </tbody>
+              <tbody id="body-personnel-admin"></tbody>
             </table>
           </div>
         </div>
@@ -760,10 +772,9 @@
 
 <script>
 const DB_KEY = 'LEDGER_MASTER_DB_PERSISTENT';
-const TERMINAL_VERSION = 'LEDGER-OS V2.6.0-PROD';
 const SERIAL_BASE = 10000000000;
 let smsPermissionGranted = false;
-let currentClientIP = 'OFFLINE (PENDING)';
+let currentClientIP = '127.0.0.1 (LOCAL)';
 let deviceFingerprint = '';
 let isSyncing = false;
 let session = null;
@@ -862,8 +873,7 @@ async function fetchClientIP() {
 }
 
 let db = { 
-  version: 30,
-  terminalVersion: TERMINAL_VERSION,
+  version: 31,
   users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', lastIp: '127.0.0.1', phone: '0000000000', deviceFp: deviceFingerprint, lastActive: Date.now() }], 
   accounts: [], 
   ledger: [], 
@@ -871,7 +881,6 @@ let db = {
   recoverRequests: [],
   chats: [],
   purgedChats: [],
-  pendingRefQueue: [],
   customTxTypes: ['CR', 'DR'],
   txRules: { CR: 'ADD', DR: 'SUB' },
   customRoles: [],
@@ -940,54 +949,13 @@ function validatePinInput(inputElem) {
   hintBox.style.color = valid ? 'var(--accent-green)' : 'var(--accent-red)';
 }
 
-// -------------------------------------------------------------------------
-// FAULT-TOLERANT REF ID GENERATION (QUEUES IF OFFLINE OR DISCONNECTED)
-// -------------------------------------------------------------------------
 async function generateTenCharRefId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let result = '';
   for (let i = 0; i < 10; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
-  if (!navigator.onLine || !supabaseClient) {
-    const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'OFFLINE_PENDING', timestamp: new Date().toLocaleString() };
-    if(!db.pendingRefQueue) db.pendingRefQueue = [];
-    db.pendingRefQueue.push(pendingItem);
-    save();
-    return { refId: result + ' [PENDING]', ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(), isPending: true };
-  }
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('terminal_store')
-      .select('data')
-      .eq('user_path', 'cloudflare_user')
-      .single();
-      
-    if (error || !data) {
-      const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'DB_DISCONNECTED_PENDING', timestamp: new Date().toLocaleString() };
-      if(!db.pendingRefQueue) db.pendingRefQueue = [];
-      db.pendingRefQueue.push(pendingItem);
-      save();
-      return { refId: result + ' [PENDING]', ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(), isPending: true };
-    }
-
-    if (data.data && data.data.ledger) {
-      const exists = data.data.ledger.some(l => l.refId === result);
-      if (exists) {
-        return generateTenCharRefId();
-      }
-    }
-  } catch(err) {
-    const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'DB_DISCONNECTED_PENDING', timestamp: new Date().toLocaleString() };
-    if(!db.pendingRefQueue) db.pendingRefQueue = [];
-    db.pendingRefQueue.push(pendingItem);
-    save();
-    return { refId: result + ' [PENDING]', ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(), isPending: true };
-  }
-
-  return { refId: result, ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(), isPending: false };
+  return { refId: result, ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
 }
 
 function showTaskFeedback(containerId, status, message) {
@@ -1077,7 +1045,6 @@ async function backgroundSync(isInitial = false) {
         if(!db.recoverRequests) db.recoverRequests = [];
         if(!db.chats) db.chats = [];
         if(!db.purgedChats) db.purgedChats = [];
-        if(!db.pendingRefQueue) db.pendingRefQueue = [];
         if(!db.users) db.users = [];
         if(!db.accounts) db.accounts = [];
         if(!db.ledger) db.ledger = [];
@@ -1101,7 +1068,6 @@ async function backgroundSync(isInitial = false) {
 async function pushDataToServerSilent() {
   if (!navigator.onLine || !supabaseClient) return;
   try {
-    db.terminalVersion = TERMINAL_VERSION;
     const securePayload = JSON.parse(JSON.stringify(db));
     await supabaseClient
       .from('terminal_store')
@@ -1431,7 +1397,7 @@ async function handleUserRegistration(e) {
   save();
   isVerifyingOtp = false;
 
-  showTaskFeedback('reg-task-feedback', 'SUCCESS', refObj.isPending ? `SUCCESS! USER ID: ${generatedUserId} | SUBMITTED & PENDING FOR REF ID.` : `SUCCESS! USER ID: ${generatedUserId} | 10-CHAR REF ID: ${tenCharRef.refId}.`);
+  showTaskFeedback('reg-task-feedback', 'SUCCESS', `SUCCESS! USER ID: ${generatedUserId} | 10-CHAR REF ID: ${tenCharRef.refId}.`);
 }
 
 function trackPreLoginRef(e) {
@@ -1564,13 +1530,13 @@ async function manualAccount(e) {
   const smsOn = (document.getElementById('acc-sms').value==='ON'); const holderNameVal = document.getElementById('acc-name').value.trim().toUpperCase();
   
   db.accounts.push({ accountNumber: accNo, holderName: await encryptData(holderNameVal), fatherName: document.getElementById('acc-father').value.trim().toUpperCase()||'N/A', phone: phone, email: await encryptData(emailVal), address: document.getElementById('acc-address').value.trim().toUpperCase()||'N/A', balance: 0, status: 'APPROVED', smsOptIn: smsOn, openedAt: nowStr, lastAccessed: nowStr, refId: tenCharRef.refId, ip: tenCharRef.ip });
-  db.ledger.unshift({ seq: db.ledger.length+1, refId: tenCharRef.refId, date: tenCharRef.date, time: tenCharRef.time, day: tenCharRef.day, ip: tenCharRef.ip, accNo, type: 'ACC_OPEN', amount: 0, operator: session ? session.id : 'GUEST', narrative: tenCharRef.isPending ? 'NEW ACCOUNT OPENED [SUBMITTED & PENDING FOR REF ID]' : `NEW ACCOUNT OPENED [REF: ${tenCharRef.refId}]` });
+  db.ledger.unshift({ seq: db.ledger.length+1, refId: tenCharRef.refId, date: tenCharRef.date, time: tenCharRef.time, day: tenCharRef.day, ip: tenCharRef.ip, accNo, type: 'ACC_OPEN', amount: 0, operator: session ? session.id : 'GUEST', narrative: `NEW ACCOUNT OPENED [REF: ${tenCharRef.refId}]` });
   save(); 
 
   if (smsOn && emailVal !== 'N/A') {
     sendNotificationEmail(emailVal, "LEDGER: Account Successfully Created", `Dear ${holderNameVal},\n\nYour Ledger account (${accNo}) has been successfully created.`);
   }
-  alert(tenCharRef.isPending ? `Account ${accNo} submitted. Pending for Ref ID generation.` : `Account ${accNo} created. REF ID: ${tenCharRef.refId}`);
+  showTaskFeedback('acc-task-feedback', 'SUCCESS', `Account ${accNo} created. REF ID: ${tenCharRef.refId}`);
   e.target.reset();
 }
 
@@ -1728,7 +1694,7 @@ async function processTx(e) {
     const plainName = await decryptData(acc.holderName);
     sendNotificationEmail(plainEmail, `LEDGER Transaction Alert: ${type}`, `Hello ${plainName},\n\nTransaction update on (${accNo}):\nType: ${type} (${rule})\nAmount: ₹${amtInput.toFixed(2)}\nClear Balance: ₹${acc.balance.toFixed(2)}\nParticulars: ${ref}`);
   }
-  alert(tenCharRef.isPending ? "Transaction submitted. Pending for Ref ID generation." : `DONE: ${type} (${rule}) OF ${amtInput.toFixed(2)}. REF: ${tenCharRef.refId}`);
+  showTaskFeedback('tx-task-feedback', 'SUCCESS', `DONE: ${type} (${rule}) OF ${amtInput.toFixed(2)}. REF: ${tenCharRef.refId}`);
   document.getElementById('tx-amt').value=''; document.getElementById('tx-ref').value='';
 }
 
@@ -1853,119 +1819,401 @@ function renderAdmin() {
   const sBody = document.getElementById('body-user-sessions');
   if(sBody) {
     sBody.innerHTML = '';
-    db.users.forEach(u => { sBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td>${u.status}</td><td>${u.phone || 'N/A'}</td></tr>`; });
+    db.users.forEach(u => { sBody.innerHTML += `<tr><td class="bold">${u.id}</td><td>${u.role}</td><td>${u.status}</td><td class="dim">${u.lastIp || 'N/A'}</td><td class="dim" style="font-size:0.6rem;">${u.deviceFp || 'N/A'}</td></tr>`; });
   }
 
-  const pBody = document.getElementById('body-pending-ref-queue');
-  if(pBody) {
-    pBody.innerHTML = '';
-    if(!db.pendingRefQueue || !db.pendingRefQueue.length) {
-      pBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">NO PENDING GENERATIONS</td></tr>';
-    } else {
-      db.pendingRefQueue.forEach(item => {
-        pBody.innerHTML += `<tr><td>${item.refId}</td><td style="color:var(--accent-red);">${item.status}</td><td><button onclick="retryPendingRef('${item.id}')">RETRY ONLINE</button></td></tr>`;
+  const qBody = document.getElementById('body-recovery-queue');
+  if(qBody) {
+    qBody.innerHTML = '';
+    if(!db.recoverRequests || !db.recoverRequests.length) { qBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">NO PENDING RECOVERIES</td></tr>'; }
+    else {
+      db.recoverRequests.forEach((req, idx) => {
+        qBody.innerHTML += `<tr><td class="bold">${req.refId}</td><td>${req.uid}</td><td>${req.phone}</td><td>${req.details}</td><td>${req.deadline}</td><td><button onclick="approveRecovery('${idx}')" style="padding:2px 6px; font-size:0.65rem;">APPROVE</button></td></tr>`;
       });
     }
   }
 
-  const pBodyPersonnel = document.getElementById('body-personnel-admin');
-  if(pBodyPersonnel) {
-    pBodyPersonnel.innerHTML = '';
+  const pBody = document.getElementById('body-personnel-admin');
+  if(pBody) {
+    pBody.innerHTML = '';
     db.users.forEach(u => {
-      pBodyPersonnel.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td><button onclick="db.users = db.users.filter(x=>x.id!=='${u.id}'); save(); renderAdmin();">DEL</button></td></tr>`;
+      const isMasterOwner = u.id === 'MASTER_OWNER' || u.role === 'OWNER';
+      pBody.innerHTML += `
+        <tr>
+          <td class="bold">${u.id}</td>
+          <td>
+            ROLE: <select onchange="updateUserRole('${u.id}', this.value)" ${isMasterOwner?'disabled':''} style="font-size:0.65rem; padding:2px;">
+              <option value="ADMIN" ${u.role==='ADMIN'?'selected':''}>ADMIN</option>
+              <option value="OPERATOR" ${u.role==='OPERATOR'?'selected':''}>OPERATOR</option>
+              <option value="SUBSCRIBER_TENANT" ${u.role==='SUBSCRIBER_TENANT'?'selected':''}>SUBSCRIBER</option>
+            </select><br><span class="dim" style="font-size:0.55rem;">STATUS: ${u.status}</span>
+          </td>
+          <td>
+            <div style="display:flex; gap:2px;">
+              <button onclick="toggleLockUser('${u.id}'); flashButton(this);" style="padding:2px 3px; font-size:0.55rem;" ${isMasterOwner?'disabled':''}>${u.status==='LOCKED'?'UNL':'LCK'}</button>
+              <button onclick="editUserPrompt('${u.id}')" style="padding:2px 3px; font-size:0.55rem;">PIN</button>
+              <button onclick="deleteUserAdmin('${u.id}')" style="padding:2px 3px; font-size:0.55rem; color:#ff4444;" ${isMasterOwner?'disabled':''}>DEL</button>
+            </div>
+          </td>
+        </tr>`;
     });
   }
 }
 
-async function retryPendingRef(itemId) {
-  if(!navigator.onLine || !supabaseClient) { alert("STILL OFFLINE. CONNECT TO INTERNET FIRST."); return; }
-  db.pendingRefQueue = db.pendingRefQueue.filter(i => i.id !== itemId);
-  save();
-  alert("ITEM RETRIED & SYNCED ONLINE.");
-  renderAdmin();
+function updateUserRole(uid, newRole) {
+  const u = db.users.find(x => x.id === uid);
+  if(u) {
+    u.role = newRole;
+    save();
+    alert(`USER ${uid} ROLE UPDATED TO ${newRole}.`);
+    renderAdmin();
+  }
 }
 
-async function handleUserRegistration(e) {
-  e.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const phone = document.getElementById('reg-phone').value;
-  const pin = document.getElementById('reg-pin').value;
-  const mode = document.getElementById('reg-mode').value;
-  const email = document.getElementById('reg-email').value;
+function editUserPrompt(uid) {
+  const u = db.users.find(x => x.id === uid);
+  if(!u) return;
+  const newPin = prompt(`ENTER NEW PIN FOR ${uid}:`, u.pin);
+  if(newPin && newPin.length >= 4) {
+    u.pin = newPin;
+    save();
+    alert(`PIN UPDATED FOR ${uid}.`);
+  } else if(newPin) {
+    alert('PIN MUST MEET FORMAT RULES.');
+  }
+}
 
-  if (mode === 'EMAIL_OTP' && !isVerifyingOtp) {
-    pendingRegOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    if(email && supabaseClient) {
-      await sendNotificationEmail(email, "LEDGER OTP Verification", `Your verification code via Bravo/Supabase is: ${pendingRegOtpCode}`);
+function approveRecovery(idx) {
+  const req = db.recoverRequests[idx];
+  if(req) {
+    const user = db.users.find(x => x.id === req.uid);
+    const newPin = '1234';
+    if(user) { user.pin = newPin; user.status = 'ACTIVE'; }
+    else { db.users.push({ id: req.uid, pin: newPin, role: 'OPERATOR', status: 'ACTIVE', lastIp: '127.0.0.1', phone: req.phone, deviceFp: deviceFingerprint, lastActive: Date.now() }); }
+    alert(`Recovery Approved! Temporary PIN: ${newPin}`);
+    db.recoverRequests.splice(idx, 1); save(); renderAdmin();
+  }
+}
+
+function toggleLockUser(uid) {
+  const u = db.users.find(x => x.id === uid);
+  if(u && u.id !== 'MASTER_OWNER') { u.status = (u.status === 'LOCKED') ? 'ACTIVE' : 'LOCKED'; save(); renderAdmin(); }
+}
+
+function deleteUserAdmin(uid) {
+  if(uid !== 'MASTER_OWNER' && confirm(`DELETE USER ${uid}?`)) { db.users = db.users.filter(x => x.id !== uid); save(); renderAdmin(); }
+}
+
+function onReportPeriodChange() {
+  const period = document.getElementById('rep-period').value;
+  document.getElementById('rep-start').style.display = (period === 'custom') ? 'block' : 'none';
+  document.getElementById('rep-end').style.display = (period === 'custom') ? 'block' : 'none';
+  generateReport();
+}
+
+function generateReport() {
+  const type = document.getElementById('rep-type').value;
+  const tbody = document.getElementById('body-report-results'); if(!tbody) return;
+  tbody.innerHTML = '';
+  let filtered = db.ledger.filter(l => type === 'ALL' || l.type === type);
+  if(!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">NO MATCHING RECORDS</td></tr>'; return; }
+  filtered.forEach(l => {
+    tbody.innerHTML += `<tr><td class="bold">${l.refId || 'N/A'}</td><td>${l.date || 'N/A'} ${l.time || ''}</td><td>${l.accNo || 'N/A'}</td><td class="bold">${l.type}</td><td>${l.amount ? l.amount.toFixed(2) : '0.00'}</td><td>${l.narrative || 'N/A'}</td><td class="dim">${l.operator || 'SYSTEM'}</td></tr>`;
+  });
+}
+
+function openSearchModal(){ 
+  document.getElementById('search-modal').style.display='flex'; 
+  clearAutoFillBoxes();
+  const queryInput = document.getElementById('search-query');
+  queryInput.value = '';
+  document.getElementById('search-enter-btn-container').style.display = 'none';
+  queryInput.focus();
+}
+function closeSearchModal(){ document.getElementById('search-modal').style.display='none'; }
+
+function onSearchCriteriaChange() {
+  const c = document.getElementById('search-criteria').value;
+  const qInput = document.getElementById('search-query'); 
+  qInput.value = ''; 
+  clearAutoFillBoxes();
+  
+  const enterBtnContainer = document.getElementById('search-enter-btn-container');
+
+  if (c === 'name' || c === 'ref') {
+    qInput.removeAttribute('inputmode');
+    qInput.removeAttribute('maxlength');
+    enterBtnContainer.style.display = 'block'; 
+  } else {
+    qInput.setAttribute('inputmode', 'numeric');
+    if (c === 'accNo') {
+      qInput.setAttribute('maxlength', '11');
+      qInput.placeholder = "ENTER 11-DIGIT ACC NO...";
+    } else if (c === 'mobile') {
+      qInput.setAttribute('maxlength', '10');
+      qInput.placeholder = "ENTER 10-DIGIT MOBILE NUMBER...";
     }
-    document.getElementById('reg-otp-verify-container').style.display = 'block';
-    alert(`OTP Generated and sent via Bravo/Supabase! (Demo Code: ${pendingRegOtpCode})`);
-    isVerifyingOtp = true;
+    enterBtnContainer.style.display = 'none';
+  }
+  qInput.focus();
+}
+
+function clearAutoFillBoxes() {
+  document.getElementById('label-primary-id').innerText = 'ACC NO / HOLDER:';
+  document.getElementById('autofill-main-identifier').innerText = '---';
+  document.getElementById('autofill-balance').innerText = '---';
+  document.getElementById('autofill-ref').innerText = '---';
+  document.getElementById('autofill-mobile').innerText = '---';
+  document.getElementById('autofill-email').innerText = '---';
+  document.getElementById('autofill-ip').innerText = '---';
+  document.getElementById('autofill-last-tx').innerText = '---';
+  document.getElementById('autofill-opened').innerText = '---';
+  document.getElementById('autofill-extra-desc').innerText = '---';
+  window.lastFetchedAccNo = null;
+}
+
+function handleSearchAutoInput(e) {
+  const c = document.getElementById('search-criteria').value;
+  const q = document.getElementById('search-query').value.trim();
+  
+  if (c === 'accNo') {
+    if (q.length > 11) {
+      e.target.value = q.slice(0, 11);
+    }
+    if (e.target.value.length === 11) {
+      runSearchForSingleRecord();
+    } else {
+      clearAutoFillBoxes();
+    }
+  } else if (c === 'mobile') {
+    if (q.length > 10) {
+      e.target.value = q.slice(0, 10);
+    }
+    if (e.target.value.length === 10) {
+      runSearchForSingleRecord();
+    } else {
+      clearAutoFillBoxes();
+    }
+  } else {
+    clearAutoFillBoxes();
+  }
+}
+
+function handleSearchKeyDown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    runSearchForSingleRecord();
+  }
+}
+
+async function runSearchForSingleRecord() {
+  const c = document.getElementById('search-criteria').value;
+  const q = document.getElementById('search-query').value.trim().toUpperCase();
+  if (!q) { clearAutoFillBoxes(); return; }
+
+  let matchRecord = null;
+  let extraInfoText = 'N/A';
+
+  if (c === 'ref') {
+    const foundLedger = db.ledger.find(l => l.refId && l.refId.toUpperCase() === q);
+    if (foundLedger) {
+      matchRecord = db.accounts.find(a => a.accountNumber === foundLedger.accNo);
+      extraInfoText = `TX TYPE: ${foundLedger.type} | NARRATIVE: ${foundLedger.narrative}`;
+    }
+  } else if (c === 'accNo') {
+    matchRecord = db.accounts.find(a => a.accountNumber === q);
+  } else if (c === 'mobile') {
+    matchRecord = db.accounts.find(a => a.phone === q);
+  } else if (c === 'name') {
+    for (let a of db.accounts) {
+      const plainName = await decryptData(a.holderName);
+      if (plainName.toUpperCase() === q || plainName.toUpperCase().includes(q)) {
+        matchRecord = a;
+        break;
+      }
+    }
+  }
+
+  if (matchRecord) {
+    const plainName = await decryptData(matchRecord.holderName);
+    const plainEmail = await decryptData(matchRecord.email);
+    
+    if (c === 'name') {
+      document.getElementById('label-primary-id').innerText = 'ACC NUMBER:';
+      document.getElementById('autofill-main-identifier').innerText = matchRecord.accountNumber;
+    } else {
+      document.getElementById('label-primary-id').innerText = 'ACC NO / HOLDER:';
+      document.getElementById('autofill-main-identifier').innerText = `${matchRecord.accountNumber} (${plainName})`;
+    }
+
+    document.getElementById('autofill-balance').innerText = matchRecord.balance.toFixed(2);
+    document.getElementById('autofill-ref').innerText = matchRecord.refId || 'N/A';
+    document.getElementById('autofill-mobile').innerText = matchRecord.phone || 'N/A';
+    document.getElementById('autofill-email').innerText = plainEmail || 'N/A';
+    document.getElementById('autofill-ip').innerText = matchRecord.ip || 'N/A';
+    
+    const lastTx = db.ledger.find(l => l.accNo === matchRecord.accountNumber);
+    document.getElementById('autofill-last-tx').innerText = lastTx ? `${lastTx.type} ₹${lastTx.amount.toFixed(2)}` : 'NO TX YET';
+    document.getElementById('autofill-opened').innerText = matchRecord.openedAt || 'N/A';
+    document.getElementById('autofill-extra-desc').innerText = extraInfoText;
+    
+    window.lastFetchedAccNo = matchRecord.accountNumber;
+  } else {
+    clearAutoFillBoxes();
+  }
+}
+
+async function exportSearchBoxPdf() {
+  if (!window.lastFetchedAccNo) {
+    alert("PLEASE FETCH AN ACCOUNT FIRST IN SEARCH.");
     return;
   }
+  const acc = db.accounts.find(a => a.accountNumber === window.lastFetchedAccNo);
+  if(!acc) return;
+  const plainName = await decryptData(acc.holderName);
+  const printTimestamp = new Date().toLocaleString();
 
-  if (isVerifyingOtp) {
-    const entered = document.getElementById('reg-otp-input').value.trim();
-    if(entered !== pendingRegOtpCode) { alert("Invalid OTP"); return; }
-  }
+  let content = `========================================\n`;
+  content += `     LEDGER // MASTER SECURE TERMINAL\n`;
+  content += `========================================\n\n`;
+  content += `REPORT TYPE: SEARCH RECORD REPORT\n`;
+  content += `ACCOUNT NO : ${window.lastFetchedAccNo}\n`;
+  content += `HOLDER NAME: ${plainName}\n`;
+  content += `BALANCE    : ₹${acc.balance.toFixed(2)}\nMOBILE     : ${acc.phone}\n`;
+  content += `REF ID     : ${acc.refId || 'N/A'}\n`;
+  content += `----------------------------------------\n`;
+  content += `PRINTED AT : ${printTimestamp}\n`;
+  content += `========================================\n`;
 
-  const uid = 'USR-' + Math.floor(1000 + Math.random() * 9000);
-  db.users.push({ id: uid, pin, role: 'OPERATOR', status: 'ACTIVE', phone });
-  save();
-  isVerifyingOtp = false;
-  alert(`Registration successful! User ID: ${uid}`);
-  toggleLoginAction('login');
+  downloadTextAsFile(content, `RECORD_${window.lastFetchedAccNo}.txt`);
+  closeSearchModal();
 }
 
-function handleRecoverySubmission(e) {
-  e.preventDefault();
-  alert("Recovery request submitted to admin queue.");
-  toggleLoginAction('login');
-}
-function trackPreLoginRef(e) {
-  const val = e.target.value.trim();
-  const res = document.getElementById('prelogin-ref-result');
-  const found = db.ledger.find(l => l.refId === val);
-  res.innerText = found ? `Found: ${found.narrative}` : 'Not found.';
-}
-function openStatusPopupModal() { document.getElementById('status-popup-modal').style.display = 'flex'; }
-function closeStatusPopupModal() { document.getElementById('status-popup-modal').style.display = 'none'; }
-function openSearchModal() { document.getElementById('search-modal').style.display = 'flex'; }
-function closeSearchModal() { document.getElementById('search-modal').style.display = 'none'; }
-function onRegModeChange() {
-  const mode = document.getElementById('reg-mode').value;
-  document.getElementById('reg-otp-verify-container').style.display = mode === 'EMAIL_OTP' ? 'block' : 'none';
-}
-function onSearchCriteriaChange() {}
-function handleSearchAutoInput(e) {}
-function handleSearchKeyDown(e) { if(e.key==='Enter') runSearchForSingleRecord(); }
-async function runSearchForSingleRecord() {
-  const q = document.getElementById('search-query').value.trim();
-  const acc = db.accounts.find(a => a.accountNumber === q || a.phone === q);
-  if(acc) {
-    const plainName = await decryptData(acc.holderName);
-    document.getElementById('autofill-main-identifier').innerText = `${acc.accountNumber} (${plainName})`;
-    document.getElementById('autofill-balance').innerText = acc.balance.toFixed(2);
-    document.getElementById('autofill-ref').innerText = acc.refId || 'N/A';
-    window.lastFetchedAccNo = acc.accountNumber;
-  }
-}
-function exportSearchBoxPdf() { exportAuditPdf(); closeSearchModal(); }
 function exportSearchBoxPassbook() {
-  if(!window.lastFetchedAccNo) return;
+  if (!window.lastFetchedAccNo) {
+    alert("PLEASE FETCH AN ACCOUNT FIRST IN SEARCH.");
+    return;
+  }
   showPage('page-passbook');
   document.getElementById('pb-acc-input').value = window.lastFetchedAccNo;
   loadPassbookData();
   closeSearchModal();
 }
-function useSearch(accNo) {
-  closeSearchModal();
-  showPage('page-teller');
-  document.getElementById('tx-acc').value = accNo;
-  autoFetch();
+
+function useSearch(acc){ closeSearchModal(); showPage('page-teller'); document.getElementById('tx-acc').value=acc; autoFetch(); }
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  if(!input) return;
+  const msgText = input.value.trim();
+  if(!msgText || !session) return;
+
+  if(!db.chats) db.chats = [];
+  db.chats.push({
+    sender: session.id,
+    recipient: 'BROADCAST',
+    text: await encryptData(msgText),
+    time: new Date().toLocaleTimeString(),
+    timestamp: Date.now(),
+    read: false
+  });
+  save();
+  input.value = '';
+  renderModalChat();
 }
 
-document.addEventListener('DOMContentLoaded', () => init());
+function handleChatEnter(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+async function renderModalChat() {
+  cleanupChatsLifecycle();
+  const container = document.getElementById('chatBox');
+  if(!container) return;
+  container.innerHTML = '';
+  if(!db.chats || !db.chats.length) {
+    container.innerHTML = '<div style="text-align: center; color: var(--dim); font-size: 0.7rem;">NO MESSAGES YET</div>';
+    return;
+  }
+  for (let c of db.chats) {
+    const isMe = session && c.sender === session.id;
+    const plainText = await decryptData(c.text);
+    container.innerHTML += `<div class="chat-msg"><span>${c.sender}:</span> ${plainText}</div>`;
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+function markMessagesRead() {
+  if(!db.chats) return;
+  db.chats.forEach(c => c.read = true);
+  save(); updateUnreadBadge();
+}
+
+function updateUnreadBadge() {
+  const badge = document.getElementById('msg-badge');
+  if(!badge || !db.chats) return;
+  const unreadCount = db.chats.filter(c => !c.read && (!session || c.sender !== session.id)).length;
+  if(unreadCount > 0) { badge.innerText = unreadCount; badge.style.display = 'inline-block'; } else { badge.style.display = 'none'; }
+}
+
+async function syncUI() {
+  let cr=0, dr=0; 
+  const rules = db.txRules || { CR: 'ADD', DR: 'SUB' };
+  for(let l of db.ledger) {
+    const rule = rules[l.type] || 'ADD';
+    if(rule === 'ADD') cr += l.amount; 
+    else if(rule === 'SUB') dr += l.amount; 
+  }
+  const depVal = document.getElementById('val-dep');
+  const withVal = document.getElementById('val-with');
+  const accsVal = document.getElementById('val-accs');
+  if(depVal) depVal.innerText=cr.toFixed(2); 
+  if(withVal) withVal.innerText=dr.toFixed(2); 
+  if(accsVal) accsVal.innerText=db.accounts.length;
+  updateUnreadBadge();
+  
+  for(let acc of db.accounts) {
+    if(acc.holderName && !acc.holderName.startsWith('ENC:')) acc.holderName = await encryptData(acc.holderName);
+  }
+
+  const jb = document.getElementById('body-journal');
+  if(jb) {
+    jb.innerHTML = '';
+    db.ledger.slice(0, 50).forEach(l => {
+      jb.innerHTML += `<tr>
+        <td>${l.seq}</td>
+        <td class="bold">${l.refId || 'N/A'}</td>
+        <td>${l.date || 'N/A'} ${l.time || ''}</td>
+        <td>${l.accNo || 'SYS'}</td>
+        <td>${l.type}</td>
+        <td>${l.amount ? l.amount.toFixed(2) : '0.00'} (${l.narrative})</td>
+        <td class="dim">${l.operator}</td>
+      </tr>`;
+    });
+  }
+}
+
+function togglePrintMeta(pageId) {
+  document.body.classList.toggle('hide-date', !document.getElementById('chk-date-' + pageId)?.checked);
+  document.body.classList.toggle('hide-time', !document.getElementById('chk-time-' + pageId)?.checked);
+  document.body.classList.toggle('hide-desc', !document.getElementById('chk-desc-' + pageId)?.checked);
+}
+
+function triggerPrint(pageId) {
+  window.print();
+}
+
+function updateNet() {
+  const tag = document.getElementById('net-status-tag');
+  if(navigator.onLine){ tag.innerText='ONLINE'; tag.style.color='#ffffff'; fetchClientIP(); backgroundSync(false); }
+  else { tag.innerText='OFFLINE'; tag.style.color='#888888'; currentClientIP = 'OFFLINE (PENDING)'; }
+}
+window.addEventListener('online', updateNet); window.addEventListener('offline', updateNet);
+
+document.addEventListener('DOMContentLoaded', () => { init(); });
 </script>
 </body>
 </html>
