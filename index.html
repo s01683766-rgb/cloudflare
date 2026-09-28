@@ -4,21 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
-  <title>LEDGER // MASTER TERMINAL</title>
+  <title>LEDGER // MASTER SECURE TERMINAL</title>
 
   <style>
-    :root { 
-      --bg: #000000; 
-      --fg: #ffffff; 
-      --dim: #888888; 
-      --yellow: #ffd700; 
-      --accent-green: #2ea043; 
-      --accent-blue: #58a6ff; 
-      --accent-red: #da3633; 
-      --font-family: 'Courier New', Courier, monospace;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
-    body { background: var(--bg); color: var(--fg); min-height: 100vh; padding: 8px; display: flex; justify-content: center; text-transform: uppercase; overflow-x: hidden; }
+    :root { --bg: #000000; --fg: #ffffff; --dim: #888888; --yellow: #ffd700; --accent-green: #2ea043; --accent-blue: #58a6ff; --accent-red: #da3633; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--fg); font-family: 'Courier New', Courier, monospace; min-height: 100vh; padding: 8px; display: flex; justify-content: center; text-transform: uppercase; overflow-x: hidden; }
     .prs-terminal { width: 100%; max-width: 950px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 70px; }
     .bold { font-weight: bold; } .dim { color: var(--dim); } .blink { animation: blinker 1s linear infinite; }
     @keyframes blinker { 50% { opacity: 0; } }
@@ -48,6 +39,7 @@
     }
 
     .active-sub-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
+    button.active-action-btn { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; }
     button.hit-flash-btn { background: var(--accent-green) !important; color: #fff !important; transform: scale(0.98); }
     
     .nav-btn.active-main-tab { background: var(--yellow) !important; color: #000 !important; border-color: var(--fg) !important; font-weight: bold; }
@@ -68,7 +60,7 @@
     .mid-action-bar button { flex: 1; font-size: 0.7rem; padding: 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--fg); }
 
     .nav-bar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; border-bottom: 2px solid var(--fg); padding-bottom: 4px; background: var(--bg); }
-    .nav-btn { background: var(--bg); color: var(--dim); border: 1px solid var(--dim); font-size: 0.5rem; padding: 5px 1px; text-align: center; cursor: pointer; text-transform: uppercase; }
+    .nav-btn { background: var(--bg); color: var(--dim); border: 1px solid var(--dim); font-size: 0.5rem; padding: 5px 1px; }
 
     #sliding-content-container { overflow-y: auto; max-height: calc(100vh - 150px); display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
 
@@ -88,8 +80,8 @@
 
     .table-container { max-height: 280px; overflow-y: auto; border: 1px solid var(--fg); }
     table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-    th { border-bottom: 1px solid var(--fg); text-align: left; padding: 4px; position: sticky; top: 0; background: var(--bg); z-index: 2; }
-    td { border-bottom: 1px dashed var(--dim); padding: 4px; vertical-align: middle; }
+    th { border-bottom: 1px solid var(--fg); text-align: left; padding: 4px; position: sticky; top: 0; background: var(--bg); }
+    td { border-bottom: 1px dashed var(--dim); padding: 4px; }
 
     .view-page { display: none; flex-direction: column; gap: 8px; }
     .stat-val { font-size: 1.2rem; font-weight: bold; margin-top: 2px; letter-spacing: 1px; }
@@ -107,34 +99,24 @@
     .print-controls-bar label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
     .print-receipt-header { display: none; }
 
-    .badge {
-      background-color: var(--accent-red);
-      color: white;
-      border-radius: 50%;
-      padding: 1px 5px;
-      font-size: 10px;
-      font-weight: bold;
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .prs-terminal > *:not(.view-page), #static-upper-dock, button, form, .box-title span:last-child, .grid-2, .grid-3, .grid-4, .task-result-box, input, select, textarea, .print-controls-bar { display: none !important; }
+      .view-page { display: none !important; }
+      .view-page[style*="flex"] { display: block !important; }
+      .prs-terminal { width: 100% !important; max-width: none !important; padding: 0 !important; }
+      .box { border: none !important; padding: 0 !important; }
+      .box-title { border-bottom: 2px solid #000 !important; color: #000 !important; margin-bottom: 6px !important; }
+      .print-receipt-header { display: block !important; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #000; font-size: 0.75rem; line-height: 1.3; color: #000 !important; }
+      .table-container { max-height: none !important; overflow: visible !important; border: 1px solid #000 !important; }
+      table { width: 100% !important; border-collapse: collapse !important; }
+      th, td { border: 1px solid #000 !important; color: #000 !important; padding: 4px !important; }
+      th { background: #eee !important; }
     }
 
-    .chat-box {
-      height: calc(65vh - 80px);
-      overflow-y: auto;
-      border: 1px dashed var(--dim);
-      padding: 6px;
-      margin-bottom: 6px;
-      font-size: 11px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .chat-msg {
-      margin-bottom: 4px;
-      background: #111;
-      border: 1px solid var(--dim);
-      padding: 6px;
-    }
-    .chat-msg span {
-      color: var(--accent-yellow);
+    @media (max-width: 650px) {
+      .grid-2, .grid-3, .grid-4, .admin-menu-grid, .account-menu-grid { grid-template-columns: 1fr; }
+      .nav-bar { grid-template-columns: repeat(7, 1fr); }
     }
   </style>
 
@@ -159,7 +141,7 @@
         </select>
       </div>
       <div>
-        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER 11-DIGIT ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
+        <input type="text" id="search-query" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER ACC NO..." oninput="handleSearchAutoInput(event)" onkeydown="handleSearchKeyDown(event)" />
       </div>
     </div>
 
@@ -194,7 +176,7 @@
   </div>
 </div>
 
-<!-- STATUS POPUP MODAL -->
+<!-- CENTERED POPUP MODAL FOR VIEW REQUEST STATUS -->
 <div id="status-popup-modal">
   <div class="box" style="width: 100%; max-width: 450px; background: #111; border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
     <div class="box-title">
@@ -205,6 +187,17 @@
     <input type="text" id="prelogin-ref-input" placeholder="ENTER 10-CHAR REF ID..." maxlength="10" style="font-size: 0.9rem; padding: 10px;" oninput="trackPreLoginRef(event)" />
     <div id="prelogin-ref-result" style="font-size: 0.75rem; color: var(--dim); padding: 6px; border: 1px dashed var(--dim); min-height: 50px;">STATUS RESULTS WILL APPEAR HERE...</div>
     <button class="inverted" onclick="closeStatusPopupModal()" style="padding: 8px; margin-top: 4px;">[ CLOSE WINDOW ]</button>
+  </div>
+</div>
+
+<!-- GENERIC CENTERED POPUP MODAL FOR CHAT / WINDOWS -->
+<div id="generic-centered-modal">
+  <div class="box" id="generic-modal-box" style="width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; background: var(--bg); border: 2px solid var(--fg); padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+    <div class="box-title">
+      <span id="generic-modal-title">MODAL DESK</span>
+      <span onclick="closeGenericModal()" style="cursor:pointer; text-decoration:underline;">[CLOSE X]</span>
+    </div>
+    <div id="generic-modal-body" style="display:flex; flex-direction:column; gap:8px;"></div>
   </div>
 </div>
 
@@ -222,7 +215,7 @@
 
     <div class="post-login-controls" id="post-login-controls">
       <div class="mid-action-bar" id="mid-action-bar">
-        <button class="btn-msg" onclick="showPage('page-chat'); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="badge" style="display:none; position:static; margin-left:4px;">0</span></button>
+        <button class="btn-msg" onclick="openChatModal(); flashButton(this);">💬 MESSAGES <span id="msg-badge" class="msg-badge" style="display:inline-block; margin-left:4px;">0</span></button>
         <button onclick="openSearchModal(); flashButton(this);">🔍 SEARCH DIRECTORY</button>
       </div>
 
@@ -231,7 +224,7 @@
         <button class="nav-btn" onclick="showPage('page-acc'); flashButton(this);">2.ACCOUNTS</button>
         <button class="nav-btn" onclick="showPage('page-teller'); flashButton(this);">3.TELLER</button>
         <button class="nav-btn" onclick="showPage('page-passbook'); flashButton(this);">4.PASSBOOK</button>
-        <button class="nav-btn" onclick="showPage('page-chat'); flashButton(this);">5.CHAT</button>
+        <button class="nav-btn" onclick="openChatModal(); flashButton(this);">5.CHAT</button>
         <button class="nav-btn" onclick="showPage('page-audit'); flashButton(this);">6.AUDIT</button>
         <button class="nav-btn" id="btn-section-7" onclick="showPage('page-section-7'); flashButton(this);">7.ADMIN</button>
       </nav>
@@ -252,7 +245,7 @@
           </div>
           <div>
             <label class="dim" style="font-size: 0.75rem; display: block; margin-bottom: 4px;">SECURITY PIN:</label>
-            <input type="password" id="inp-pin" placeholder="PIN" value="" required style="font-size: 1rem; padding: 10px;" oninput="validatePinInput(this)" />
+            <input type="password" id="inp-pin" placeholder="PIN" required style="font-size: 1rem; padding: 10px;" oninput="validatePinInput(this)" />
             <div id="pin-hint" style="font-size: 0.6rem; color: var(--yellow); margin-top: 4px;">RULE (SET BY OWNER): DYNAMIC HINT.</div>
           </div>
           <button type="submit" class="inverted" onclick="flashButton(this)" style="font-size: 1rem; padding: 12px; margin-top: 6px;">[ AUTHORIZE LOGIN ]</button>
@@ -280,7 +273,7 @@
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">CREATE PIN:</label>
-            <input type="password" id="reg-pin" placeholder="PIN" value="" required style="font-size: 0.9rem; padding: 8px;" oninput="validatePinInput(this)" />
+            <input type="password" id="reg-pin" placeholder="PIN" required style="font-size: 0.9rem; padding: 8px;" oninput="validatePinInput(this)" />
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">ASSIGN ROLE:</label>
@@ -288,25 +281,14 @@
               <option value="ADMIN" selected>ROLE: ADMIN</option>
               <option value="OPERATOR">ROLE: OPERATOR</option>
               <option value="SUBSCRIBER_TENANT">ROLE: INDEPENDENT CUSTOMER</option>
+              <option value="GENERAL_USER">ROLE: GENERAL USER</option>
             </select>
           </div>
           <div>
             <label class="dim" style="font-size:0.75rem;">EMAIL ADDRESS (OPTIONAL):</label>
             <input type="text" id="reg-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this)" style="font-size: 0.9rem; padding: 8px;" />
+            <div id="email-warning" style="font-size:0.6rem; color:var(--accent-red); display:none; margin-top:2px;">WARNING: INVALID EMAIL FORMAT.</div>
           </div>
-          <div>
-            <label class="dim" style="font-size:0.75rem;">REGISTRATION MODE:</label>
-            <select id="reg-mode" style="font-size: 0.9rem; padding: 8px;" onchange="onRegModeChange()">
-              <option value="DIRECT" selected>DIRECT (WITHOUT OTP)</option>
-              <option value="EMAIL_OTP">VERIFY VIA EMAIL OTP (BRAVO / SUPABASE)</option>
-            </select>
-          </div>
-
-          <div id="reg-otp-verify-container" style="display:none; border: 1px dashed var(--yellow); padding: 8px; margin-top: 4px;">
-            <label class="dim" style="font-size:0.75rem; color:var(--yellow);">ENTER 6-DIGIT EMAIL OTP:</label>
-            <input type="text" id="reg-otp-input" placeholder="ENTER OTP CODE" maxlength="6" inputmode="numeric" style="font-size: 0.9rem; padding: 8px; margin-top: 4px;" />
-          </div>
-
           <button type="submit" class="btn-green" onclick="flashButton(this)" style="padding: 10px; margin-top: 6px;">[ SUBMIT REGISTRATION ]</button>
         </form>
 
@@ -345,7 +327,6 @@
       </div>
     </div>
 
-    <!-- Dash Page -->
     <div class="view-page" id="page-dash">
       <div class="grid-3">
         <div class="box"><div class="box-title">DEPOSITS (CR)</div><div class="stat-val" id="val-dep">0.00</div></div>
@@ -354,22 +335,18 @@
       </div>
     </div>
 
-    <!-- Accounts Page -->
     <div class="view-page" id="page-acc">
       <div class="box">
         <div class="box-title">ACCOUNTS MANAGEMENT DESK</div>
-        <p class="dim" style="font-size:0.75rem; margin-bottom:6px;">SELECT AN ACCOUNT MODULE BELOW:</p>
-        
         <div class="account-menu-grid">
           <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-import', this)">[1] HYBRID CONTACT & VCF IMPORT</button>
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-manual', this)">[2] MANUAL ACCOUNT REGISTRATION</button>
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-edit', this)">[3] ACCOUNT MODIFICATION DESK</button>
-          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-directory', this)">[4] RECORD DIRECTORY & DIRECTORY PRINT</button>
+          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-manual', this)">[2] MANUAL REGISTRATION</button>
+          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-edit', this)">[3] MODIFICATION DESK</button>
+          <button class="inverted sub-nav-btn" onclick="openAccountSubPanel('panel-acc-directory', this)">[4] RECORD DIRECTORY</button>
         </div>
 
         <div id="panel-acc-import" class="account-sub-panel">
-          <div class="box-title"><span>CONTACT IMPORT & PULLING ENGINE</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <p class="dim" style="font-size:0.65rem; margin-bottom:6px;">1. SELECT SPECIFIC CONTACTS DIRECTLY FROM DEVICE.<br>2. BULK IMPORT ENTIRE ADDRESS BOOK VIA .VCF FILE.</p>
+          <div class="box-title"><span>CONTACT IMPORT ENGINE</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div class="grid-2">
             <button class="inverted" onclick="importMultipleContacts(); flashButton(this);">[ CHOOSE CONTACTS ]</button>
             <button class="inverted" onclick="document.getElementById('vcf-upload').click()">[ IMPORT .VCF ]</button>
@@ -378,40 +355,33 @@
         </div>
 
         <div id="panel-acc-manual" class="account-sub-panel">
-          <div class="box-title">
-            <span>MANUAL ACCOUNT REGISTRATION</span>
-            <div>
-              <button class="inverted" onclick="requestSmsBrowserPermission()" style="font-size:0.6rem; padding:2px 6px; margin-right:4px;">[SMS PERM: <span id="sms-perm-status">OFF</span>]</button>
-              <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button>
-            </div>
-          </div>
+          <div class="box-title"><span>MANUAL REGISTRATION</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div id="acc-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
           <form onsubmit="manualAccount(event)" style="display:flex; flex-direction:column; gap:8px;">
             <div class="grid-3">
-              <input type="text" id="acc-name" class="autofocus-target" placeholder="HOLDER NAME" required autofocus oninput="autoJump(this, 'acc-father')" />
-              <input type="text" id="acc-father" placeholder="FATHER'S NAME" oninput="autoJump(this, 'acc-phone')" />
-              <input type="tel" id="acc-phone" inputmode="numeric" placeholder="MOBILE NO (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this); autoJump(this, 'acc-email', 10);" />
+              <input type="text" id="acc-name" placeholder="HOLDER NAME" required />
+              <input type="text" id="acc-father" placeholder="FATHER'S NAME" />
+              <input type="tel" id="acc-phone" inputmode="numeric" placeholder="MOBILE NO (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this)" />
             </div>
             <div class="grid-3">
-              <input type="text" id="acc-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this); autoJump(this, 'acc-address');" />
+              <input type="text" id="acc-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this)" />
               <select id="acc-sms"><option value="OFF" selected>SMS ALERTS: OFF</option><option value="ON">SMS ALERTS: ON</option></select>
-              <select id="acc-auth-mode" onchange="toggleAccountOtpBox()"><option value="DIRECT">CREATE WITHOUT OTP</option><option value="OTP">VERIFY VIA OTP</option></select>
+              <select id="acc-auth-mode"><option value="DIRECT">CREATE WITHOUT OTP</option></select>
             </div>
             <textarea id="acc-address" placeholder="PHYSICAL ADDRESS" rows="1"></textarea>
-            <div id="acc-otp-box" style="display:none;"><input type="text" id="acc-otp-input" placeholder="ENTER OTP" oninput="autoJump(this, null, 6)" /></div>
-            <button type="submit" class="inverted" onclick="flashButton(this)">[ GENERATE A/C / QUEUE REQUEST ]</button>
+            <button type="submit" class="inverted" onclick="flashButton(this)">[ GENERATE A/C ]</button>
           </form>
         </div>
 
         <div id="panel-acc-edit" class="account-sub-panel">
-          <div class="box-title"><span>ACCOUNT MODIFICATION DESK</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <div class="box-title"><span>MODIFICATION DESK</span> <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div id="edit-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
           <form onsubmit="saveAccEdit(event)" style="display:flex; flex-direction:column; gap:8px;">
             <div class="grid-2"><input type="text" id="edit-accno" placeholder="SELECT A/C FROM DIRECTORY" readonly /><input type="text" id="edit-bal" readonly placeholder="BALANCE" /></div>
-            <div class="grid-2"><input type="text" id="edit-name" class="autofocus-target" required placeholder="HOLDER NAME" oninput="autoJump(this, 'edit-father')" /><input type="text" id="edit-father" required placeholder="FATHER'S NAME" oninput="autoJump(this, 'edit-phone')" /></div>
-            <div class="grid-2"><input type="tel" id="edit-phone" inputmode="numeric" placeholder="MOBILE (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this); autoJump(this, 'edit-email', 10);" /><input type="text" id="edit-email" placeholder="EMAIL (OPTIONAL)" oninput="validateEmailInput(this); autoJump(this, 'edit-address');" /></div>
+            <div class="grid-2"><input type="text" id="edit-name" required placeholder="HOLDER NAME" /><input type="text" id="edit-father" required placeholder="FATHER'S NAME" /></div>
+            <div class="grid-2"><input type="tel" id="edit-phone" inputmode="numeric" placeholder="MOBILE (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this)" /><input type="text" id="edit-email" placeholder="EMAIL (OPTIONAL)" /></div>
             <div class="grid-2"><textarea id="edit-address" rows="2" placeholder="ADDRESS"></textarea><select id="edit-sms"><option value="ON">SMS: ON</option><option value="OFF">SMS: OFF</option></select></div>
-            <button type="submit" class="inverted" onclick="flashButton(this)">[ SUBMIT EDIT FOR APPROVAL ]</button>
+            <button type="submit" class="inverted" onclick="flashButton(this)">[ SUBMIT EDIT ]</button>
           </form>
         </div>
 
@@ -419,108 +389,67 @@
           <div class="box-title">
             <span>RECORD DIRECTORY</span>
             <div>
-              <button class="inverted" onclick="loadAccountDirectory(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem; margin-right: 4px;">[ LOAD ALL ]</button>
-              <button class="inverted" onclick="triggerPrint('page-acc'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem; margin-right:4px;">[ PRINT ]</button>
+              <button class="inverted" onclick="loadAccountDirectory(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ LOAD ALL ]</button>
+              <button class="inverted" onclick="triggerPrint('page-acc'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT ]</button>
               <button onclick="closeAccountSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button>
             </div>
           </div>
           <div class="print-controls-bar">
             <label><input type="checkbox" id="chk-date-page-acc" checked onchange="togglePrintMeta('page-acc')" /> PRINT DATE</label>
             <label><input type="checkbox" id="chk-time-page-acc" checked onchange="togglePrintMeta('page-acc')" /> PRINT TIME</label>
-            <label><input type="checkbox" id="chk-desc-page-acc" checked onchange="togglePrintMeta('page-acc')" /> METADATA</label>
           </div>
           <div class="print-receipt-header" id="print-header-page-acc"></div>
           <div class="table-container">
             <table>
-              <thead><tr><th>ACC NO</th><th>HOLDER & DETAILS</th><th>CONTACT</th><th>BAL</th><th>ACTION</th></tr></thead>
-              <tbody id="body-accs"><tr><td colspan="5" style="text-align:center;">CLICK 'LOAD ALL' TO FETCH RECORDS</td></tr></tbody>
+              <thead><tr><th>ACC</th><th>HOLDER</th><th>CONTACT</th><th>BAL</th><th>ACTION</th></tr></thead>
+              <tbody id="body-accs"><tr><td colspan="5" style="text-align:center;">CLICK 'LOAD ALL' TO FETCH</td></tr></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- Teller Page -->
     <div class="view-page" id="page-teller">
       <div class="box">
         <div class="box-title">TRANSACTION CLEARING DESK</div>
         <div id="tx-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
         <form onsubmit="processTx(event)" style="display:flex; flex-direction:column; gap:8px;">
           <div class="grid-2">
-            <div><label class="dim">ACC NO (11 DIGITS):</label><input type="tel" id="tx-acc" class="autofocus-target" inputmode="numeric" maxlength="11" oninput="autoJump(this, 'tx-amt', 11); autoFetch();" required autofocus /></div>
-            <div><label class="dim">DATA:</label><input type="text" id="tx-fetch" readonly placeholder="ENTER A/C TO CHECK..." /></div>
+            <div><label class="dim">ACC NO:</label><input type="tel" id="tx-acc" inputmode="numeric" maxlength="11" oninput="autoFetch()" required /></div>
+            <div><label class="dim">DATA:</label><input type="text" id="tx-fetch" readonly placeholder="STATUS..." /></div>
           </div>
           <div class="grid-3">
-            <input type="number" step="any" id="tx-amt" inputmode="numeric" placeholder="AMOUNT (NUMERIC)" required oninput="autoJump(this, 'tx-ref')" />
+            <input type="number" step="any" id="tx-amt" inputmode="numeric" placeholder="AMOUNT" required />
             <select id="tx-type"><option value="CR">CREDIT (CR)</option><option value="DR">DEBIT (DR)</option></select>
-            <input type="text" id="tx-ref" placeholder="PARTICULARS / DESCRIPTION" required />
+            <input type="text" id="tx-ref" placeholder="PARTICULARS" required />
           </div>
           <button type="submit" class="inverted" onclick="flashButton(this)">[ PROCESS TRANSACTION ]</button>
         </form>
       </div>
     </div>
 
-    <!-- Passbook Page -->
     <div class="view-page" id="page-passbook">
       <div class="box">
         <div class="box-title">
-          <span>DIGITAL PASSBOOK & STATEMENT DESK</span>
+          <span>DIGITAL PASSBOOK</span>
           <div>
             <button class="inverted" onclick="exportPassbookPdf(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem; margin-right: 4px;">[ GENERATE PDF ]</button>
             <button class="inverted" onclick="triggerPrint('page-passbook'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT ]</button>
           </div>
         </div>
-        <div class="print-controls-bar">
-          <label><input type="checkbox" id="chk-date-page-passbook" checked onchange="togglePrintMeta('page-passbook')" /> PRINT DATE</label>
-          <label><input type="checkbox" id="chk-time-page-passbook" checked onchange="togglePrintMeta('page-passbook')" /> PRINT TIME</label>
-          <label><input type="checkbox" id="chk-desc-page-passbook" checked onchange="togglePrintMeta('page-passbook')" /> PARTICULARS</label>
-        </div>
         <div class="grid-2" style="margin-bottom: 8px;">
-          <div><input type="tel" id="pb-acc-input" class="autofocus-target" inputmode="numeric" maxlength="11" placeholder="ENTER 11-DIGIT ACC NO" oninput="autoJump(this, null, 11);" onkeydown="handlePassbookKeyDown(event)" autofocus /></div>
-          <div><input type="text" id="pb-holder-info" readonly placeholder="HOLDER DETAILS & BALANCE" /></div>
+          <div><input type="tel" id="pb-acc-input" inputmode="numeric" maxlength="11" placeholder="ACC NO" oninput="loadPassbookData()" /></div>
+          <div><input type="text" id="pb-holder-info" readonly placeholder="DETAILS" /></div>
         </div>
-        <div class="print-receipt-header" id="print-header-page-passbook"></div>
         <div class="table-container">
           <table>
-            <thead>
-              <tr>
-                <th class="print-col-date">DATE</th>
-                <th class="print-col-time">TIME</th>
-                <th>TYPE</th>
-                <th class="print-col-desc">PARTICULARS / DESCRIPTION</th>
-                <th>AMOUNT</th>
-                <th>CLEAR BAL</th>
-              </tr>
-            </thead>
-            <tbody id="body-passbook-ledger">
-              <tr><td colspan="6" style="text-align:center;">ENTER AN ACCOUNT NUMBER AND PRESS ENTER TO VIEW PASSBOOK</td></tr>
-            </tbody>
+            <thead><tr><th>DATE</th><th>TIME</th><th>TYPE</th><th>PARTICULARS</th><th>AMOUNT</th><th>BAL</th></tr></thead>
+            <tbody id="body-passbook-ledger"><tr><td colspan="6" style="text-align:center;">ENTER ACCOUNT NUMBER</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Chat Page (Section 5) -->
-    <div class="view-page" id="page-chat">
-      <div class="box" style="height: 75vh; display: flex; flex-direction: column; gap: 8px; position: relative;">
-        <div class="box-title">
-          <span>INTERNAL SECURE CHAT DESK // BROADCAST</span> 
-          <span class="dim">CONNECTED</span>
-        </div>
-        
-        <div class="chat-box" id="chatBox">
-          <div class="chat-msg"><span>System:</span> Welcome to secure broadcast terminal chat.</div>
-        </div>
-
-        <div class="form-group" style="margin-bottom: 4px;">
-          <input type="text" class="form-input autofocus-target" id="chatInput" placeholder="TYPE BROADCAST MESSAGE..." onkeypress="handleChatEnter(event)" style="font-size: 1rem; padding: 10px;" />
-        </div>
-        <button type="button" class="submit-btn inverted" onclick="sendChatMessage(); flashButton(this);" style="padding: 10px;">[ SEND BROADCAST MESSAGE ]</button>
-      </div>
-    </div>
-
-    <!-- SECTION 7 (ADMIN DESK) -->
     <div class="view-page" id="page-section-7">
       <div class="box" id="section-7-container">
         <div class="box-title"><span id="section-7-title">ADMINISTRATION & MASTER CONTROL</span></div>
@@ -532,7 +461,7 @@
           <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-user-sessions', this)">[3] USER LOGIN & IP AUDIT</button>
           <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-recovery-req', this)">[4] PASSWORD RECOVERY QUEUE</button>
           <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-reports', this)">[5] TRANSACTION REPORTS</button>
-          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-personnel', this)">[6] USER MGMT, EDIT & BACKUP</button>
+          <button class="inverted sub-nav-btn" onclick="openAdminSubPanel('panel-personnel', this)">[6] USER MGMT & BACKUP</button>
         </div>
 
         <div id="section-7-user-profile" style="display:none; padding: 10px;">
@@ -545,17 +474,12 @@
           </div>
         </div>
 
-        <!-- System Version Info Displayed in Admin / About Desk -->
-        <div style="margin: 10px 0; padding: 6px; border: 1px dashed var(--dim); font-size: 0.7rem; display: flex; justify-content: space-between;">
-          <span>SYSTEM CORE VERSION:</span> <span class="bold" style="color: var(--yellow);">LEDGER-OS V2.6.0-PROD</span>
-        </div>
-
         <div style="margin-top: 12px; border-top: 1px dashed var(--fg); padding-top: 10px;">
-          <button class="btn-red" onclick="confirmSignOut(); flashButton(this);" style="width: 100%; padding: 10px;">[ SIGN OUT OF TERMINAL ]</button>
+          <button class="btn-red" onclick="confirmSignOut(); flashButton(this);" style="width: 100%; padding: 10px;">[ SIGN OUT ]</button>
         </div>
 
         <div id="panel-settings" class="admin-sub-panel">
-          <div class="box-title"><span>CONFIG & RULES // SELECT FUNCTION</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <div class="box-title"><span>CONFIG & RULES // INTEREST ENGINE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div class="grid-3" style="margin-bottom: 8px;">
             <button class="inverted" onclick="openConfigTab('cfg-tab-interest', this)">INTEREST ENGINE</button>
             <button class="inverted" onclick="openConfigTab('cfg-tab-system', this)">SYSTEM RECOVERY</button>
@@ -567,15 +491,11 @@
             <div class="grid-2" style="margin-bottom: 6px;">
               <div>
                 <label class="dim" style="font-size: 0.65rem;">TARGET SCOPE:</label>
-                <select id="interest-scope" style="font-size: 0.75rem;">
-                  <option value="ALL">ALL ACCOUNTS</option>
-                  <option value="SPECIFIC">SPECIFIC ACCOUNT</option>
-                  <option value="TYPE">TRANSACTION TYPE</option>
-                </select>
+                <select id="interest-scope" style="font-size: 0.75rem;"><option value="ALL">ALL ACCOUNTS</option></select>
               </div>
               <div>
-                <label class="dim" style="font-size: 0.65rem;">TARGET ID / TYPE:</label>
-                <input type="text" id="interest-target" placeholder="ACC NO OR TYPE" style="font-size: 0.75rem;" />
+                <label class="dim" style="font-size: 0.65rem;">TARGET ID:</label>
+                <input type="text" id="interest-target" placeholder="ACC NO" style="font-size: 0.75rem;" />
               </div>
             </div>
             <div class="grid-3" style="margin-bottom: 6px;">
@@ -603,195 +523,96 @@
               <span>DEFAULT RECOVERY PERIOD (DAYS):</span>
               <input type="number" id="cfg-rec-days" value="7" style="width: 70px;" onchange="updateRecoverySetting()" />
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; padding: 5px 0; border-top:1px dashed var(--dim);">
-              <span>ONLINE DEBIT ONLY:</span>
-              <button type="button" id="btn-toggle-debit" class="inverted" onclick="toggleDebitSetting(); flashButton(this);">OFF</button>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; padding: 5px 0; border-top:1px dashed var(--dim);">
-              <span>SMS / EMAIL RELAY:</span>
-              <button type="button" id="btn-toggle-sms-master" class="inverted" onclick="toggleSmsMasterSetting(); flashButton(this);">ON</button>
-            </div>
           </div>
 
           <div id="cfg-tab-pwd" class="settings-sub-panel" style="display:none; border:1px dashed var(--dim); padding:8px; margin-top:6px;">
             <label class="dim" style="font-size:0.65rem;">PASSWORD RULE CONFIGURATION:</label>
-            <div class="grid-2" style="margin-top: 4px;">
-              <select id="admin-pwd-rule" onchange="updatePasswordRuleSetting()">
-                <option value="4_NUMERIC">4-DIGIT NUMERIC</option>
-                <option value="8_NUMERIC">8-DIGIT NUMERIC</option>
-                <option value="MIXED_CHAR" selected>MIXED (8+ CHARS, UPPER, LOWER, NUM, SPEC)</option>
-              </select>
-              <button class="inverted" onclick="alert('PASSWORD RULE UPDATED.');">[ SAVE RULE ]</button>
-            </div>
+            <select id="admin-pwd-rule" onchange="updatePasswordRuleSetting()">
+              <option value="MIXED_CHAR" selected>MIXED (8+ CHARS)</option>
+              <option value="4_NUMERIC">4-DIGIT NUMERIC</option>
+            </select>
           </div>
         </div>
 
         <div id="panel-create-user" class="admin-sub-panel">
-          <div class="box-title"><span>USER CREATION & DYNAMIC ROLE PERMISSIONS</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <div class="box-title"><span>USER CREATION DESK</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div id="admin-create-task-feedback" class="task-result-box" onclick="this.style.display='none'"></div>
-          
           <form onsubmit="adminCreateUser(event)" style="display:flex; flex-direction:column; gap:8px;">
             <div class="grid-2">
-              <input type="text" id="admin-new-uid" class="autofocus-target" placeholder="NEW USER ID" required autofocus oninput="autoJump(this, 'admin-new-pin')" />
-              <input type="password" id="admin-new-pin" placeholder="PIN" value="" required oninput="validatePinInput(this)" />
+              <input type="text" id="admin-new-uid" placeholder="NEW USER ID" required />
+              <input type="password" id="admin-new-pin" placeholder="PIN" required oninput="validatePinInput(this)" />
             </div>
             <div class="grid-2">
-              <input type="tel" id="admin-new-phone" inputmode="numeric" placeholder="MOBILE NO (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this); autoJump(this, 'admin-new-role', 10);" />
-              <select id="admin-new-role">
-                <option value="ADMIN">ROLE: ADMIN</option>
-                <option value="OPERATOR" selected>ROLE: OPERATOR</option>
-                <option value="SUBSCRIBER_TENANT">ROLE: INDEPENDENT CUSTOMER</option>
-              </select>
+              <input type="tel" id="admin-new-phone" inputmode="numeric" placeholder="MOBILE (10 DIGITS)" maxlength="10" required oninput="validateMobileInput(this)" />
+              <select id="admin-new-role"><option value="OPERATOR" selected>ROLE: OPERATOR</option><option value="ADMIN">ROLE: ADMIN</option></select>
             </div>
-
-            <div style="border: 1px dashed var(--dim); padding: 8px; margin-top: 4px; background: #080808;">
-              <div class="bold" style="font-size: 0.7rem; color: var(--yellow); margin-bottom: 4px;">CREATE CUSTOM ROLE & ASSIGN FEATURE PERMISSIONS</div>
-              <div class="grid-2" style="margin-bottom: 6px;">
-                <input type="text" id="new-role-name" placeholder="NEW ROLE NAME (E.G. MANAGER)" style="font-size:0.75rem;" />
-                <button type="button" class="inverted" onclick="createNewCustomRole(); flashButton(this);" style="font-size:0.75rem;">[ ADD ROLE ]</button>
-              </div>
-              <div style="font-size: 0.65rem; color: var(--dim); margin-bottom: 4px;">SELECT MODULE PERMISSIONS FOR NEW ROLE:</div>
-              <div class="grid-2" style="font-size: 0.7rem;">
-                <label><input type="checkbox" class="role-perm-chk" value="DASH" checked /> 1. DASHBOARD</label>
-                <label><input type="checkbox" class="role-perm-chk" value="ACCOUNTS" checked /> 2. ACCOUNTS</label>
-                <label><input type="checkbox" class="role-perm-chk" value="TELLER" checked /> 3. TELLER</label>
-                <label><input type="checkbox" class="role-perm-chk" value="PASSBOOK" checked /> 4. PASSBOOK</label>
-                <label><input type="checkbox" class="role-perm-chk" value="CHAT" checked /> 5. CHAT</label>
-                <label><input type="checkbox" class="role-perm-chk" value="AUDIT" checked /> 6. AUDIT</label>
-              </div>
-            </div>
-
-            <button type="submit" class="inverted" onclick="flashButton(this)" style="margin-top: 4px;">[ CREATE USER ]</button>
+            <button type="submit" class="inverted" onclick="flashButton(this)">[ CREATE USER ]</button>
           </form>
         </div>
 
         <div id="panel-user-sessions" class="admin-sub-panel">
-          <div class="box-title"><span>USER LOGIN / LOGOUT TIME & IP AUDIT</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <div class="box-title"><span>USER LOGIN & IP AUDIT</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div class="table-container">
-            <table><thead><tr><th>USER ID</th><th>ROLE</th><th>STATUS</th><th>LAST IP</th><th>DEVICE FP</th></tr></thead><tbody id="body-user-sessions"></tbody></table>
+            <table><thead><tr><th>USER ID</th><th>ROLE</th><th>STATUS</th><th>LAST IP</th></tr></thead><tbody id="body-user-sessions"></tbody></table>
           </div>
         </div>
 
         <div id="panel-recovery-req" class="admin-sub-panel">
-          <div class="box-title"><span>PASSWORD RECOVERY & USER ID RETRIEVAL QUEUE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <div class="box-title"><span>PASSWORD RECOVERY QUEUE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div class="table-container">
-            <table><thead><tr><th>REF ID</th><th>USER ID / QUERY</th><th>PHONE</th><th>DETAILS / REASON</th><th>TARGET DEADLINE</th><th>ACTION</th></tr></thead><tbody id="body-recovery-queue"></tbody></table>
+            <table><thead><tr><th>REF ID</th><th>USER ID</th><th>PHONE</th><th>ACTION</th></tr></thead><tbody id="body-recovery-queue"></tbody></table>
           </div>
         </div>
 
         <div id="panel-reports" class="admin-sub-panel">
-          <div class="box-title">
-            <span>ADVANCED TRANSACTION REPORTS & EDIT HISTORY</span>
-            <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button>
-          </div>
-          <div class="grid-4" style="margin-bottom:6px;">
-            <select id="rep-period" onchange="onReportPeriodChange()">
-              <option value="all">ALL TIME</option>
-              <option value="daily">DAILY</option>
-              <option value="weekly">WEEKLY</option>
-              <option value="monthly">MONTHLY</option>
-              <option value="custom">DATE RANGE</option>
-            </select>
-            <select id="rep-type" onchange="generateReport()">
-              <option value="ALL">ALL TYPES</option>
-              <option value="CR">CREDIT (CR)</option>
-              <option value="DR">DEBIT (DR)</option>
-            </select>
-            <input type="date" id="rep-start" style="display:none;" onchange="generateReport()" />
-            <input type="date" id="rep-end" style="display:none;" onchange="generateReport()" />
-          </div>
-          <div style="margin-bottom:6px;">
-            <button class="inverted" onclick="triggerPrint('page-admin-report'); flashButton(this);">[ PRINT / GENERATE PDF REPORT ]</button>
-          </div>
-          <div class="print-receipt-header" id="print-header-page-admin-report"></div>
+          <div class="box-title"><span>TRANSACTION REPORTS</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div class="table-container">
-            <table><thead><tr><th>REF ID</th><th>DATE/TIME</th><th>ACC NO</th><th>TYPE</th><th>AMOUNT</th><th>PARTICULARS</th><th>OPERATOR</th></tr></thead><tbody id="body-report-results"></tbody></table>
+            <table><thead><tr><th>REF ID</th><th>DATE/TIME</th><th>ACC</th><th>TYPE</th><th>AMT</th><th>OPERATOR</th></tr></thead><tbody id="body-report-results"></tbody></table>
           </div>
         </div>
 
-        <!-- Pending Ref ID Generation List in Admin Panel -->
         <div id="panel-personnel" class="admin-sub-panel">
-          <div class="box-title"><span>PENDING REF ID GENERATION & QUEUE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
-          <p class="dim" style="font-size:0.65rem; margin-bottom:6px;">ITEMS PENDING UNIQUE RE-VERIFICATION OR CREATED OFFLINE:</p>
+          <div class="box-title"><span>USER MGMT & BACKUP</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
           <div style="margin-bottom: 8px; display:flex; gap:6px;">
             <button class="inverted" onclick="exportBackupData(); flashButton(this);">[ EXPORT BACKUP ]</button>
             <button class="inverted" onclick="document.getElementById('backup-file-input').click()">[ RESTORE BACKUP ]</button>
             <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="importBackupData(event)" />
           </div>
           <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>PENDING ITEM / REF</th>
-                  <th>STATUS (ONLINE / OFFLINE)</th>
-                  <th>ACTION</th>
-                </tr>
-              </thead>
-              <tbody id="body-pending-ref-queue">
-                <tr><td colspan="3" style="text-align:center;">NO PENDING GENERATIONS</td></tr>
-              </tbody>
-            </table>
+            <table><thead><tr><th>USER ID</th><th>ROLE / STATUS</th><th>ACTIONS</th></tr></thead><tbody id="body-personnel-admin"></tbody></table>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- Audit Page -->
     <div class="view-page" id="page-audit">
       <div class="box">
         <div class="box-title">
-          <span>IMMUTABLE JOURNAL & EDIT HISTORY</span>
+          <span>IMMUTABLE JOURNAL</span>
           <div>
             <button class="inverted" onclick="exportAuditPdf(); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem; margin-right: 4px;">[ GENERATE PDF ]</button>
-            <button class="inverted" onclick="triggerPrint('page-audit'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT JOURNAL ]</button>
+            <button class="inverted" onclick="triggerPrint('page-audit'); flashButton(this);" style="padding: 2px 6px; font-size: 0.65rem;">[ PRINT ]</button>
           </div>
         </div>
-        <div class="print-controls-bar">
-          <label><input type="checkbox" id="chk-date-page-audit" checked onchange="togglePrintMeta('page-audit')" /> PRINT DATE</label>
-          <label><input type="checkbox" id="chk-time-page-audit" checked onchange="togglePrintMeta('page-audit')" /> PRINT TIME</label>
-          <label><input type="checkbox" id="chk-desc-page-audit" checked onchange="togglePrintMeta('page-audit')" /> DESCRIPTION</label>
-        </div>
-        <div class="print-receipt-header" id="print-header-page-audit"></div>
         <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>SEQ</th>
-                <th>REF ID</th>
-                <th>DATE/TIME</th>
-                <th>ACC NO</th>
-                <th>TYP</th>
-                <th>AMT / PARTICULAR</th>
-                <th>OPERATOR</th>
-              </tr>
-            </thead>
-            <tbody id="body-journal"></tbody>
-          </table>
+          <table><thead><tr><th>SEQ</th><th>REF</th><th>DATE</th><th>ACC</th><th>TYP</th><th>AMT</th><th>OPERATOR</th></tr></thead><tbody id="body-journal"></tbody></table>
         </div>
       </div>
     </div>
 
-  </div> <!-- End of sliding content container -->
-
-</div> <!-- End of terminal container -->
+  </div>
+</div>
 
 <script>
 const DB_KEY = 'LEDGER_MASTER_DB_PERSISTENT';
-const TERMINAL_VERSION = 'LEDGER-OS V2.6.0-PROD';
 const SERIAL_BASE = 10000000000;
-let smsPermissionGranted = false;
-let currentClientIP = 'OFFLINE (PENDING)';
-let deviceFingerprint = '';
-let isSyncing = false;
+let currentClientIP = '127.0.0.1';
 let session = null;
-
-let pendingRegOtpCode = null;
-let pendingRegData = null;
-let isVerifyingOtp = false;
+let isSyncing = false;
 
 const SUPABASE_URL = 'https://anwwhrtszdrjdmdrtvoi.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFud3docnzsZmdyamRydHZvaSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzg5NTY4MDg4LCJleHAiOjIxMDUxNDQwODh9.DJb9igB0QftEZucScZsBnggUPK0-7Syjw9PLCUMFmqM';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFud3docnRzemRyamRtZHJ0dm9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NjgwODgsImV4cCI6MjEwNTE0NDA4OH0.DJb9igB0QftEZucScZsBnggUPK0-7Syjw9PLCUMFmqM';
+
 let supabaseClient = null;
 if (window.supabase) {
   try {
@@ -851,50 +672,22 @@ async function decryptData(encryptedStr) {
   }
 }
 
-function getDeviceFingerprint() {
-  let fp = localStorage.getItem('LEDGER_DEVICE_FP');
-  if (!fp) {
-    fp = 'FP_' + Math.random().toString(36).substring(2, 10).toUpperCase() + '_' + Date.now();
-    localStorage.setItem('LEDGER_DEVICE_FP', fp);
-  }
-  return fp;
-}
-deviceFingerprint = getDeviceFingerprint();
-
-async function fetchClientIP() {
-  if (!navigator.onLine) {
-    currentClientIP = 'OFFLINE (PENDING)';
-    return currentClientIP;
-  }
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
-    const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store', signal: controller.signal });
-    clearTimeout(timeoutId);
-    const data = await res.json();
-    currentClientIP = data.ip;
-  } catch(e) {
-    currentClientIP = '127.0.0.1 (LOCAL)';
-  }
-  return currentClientIP;
-}
-
 let db = { 
-  version: 28,
-  terminalVersion: TERMINAL_VERSION,
-  users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', lastIp: '127.0.0.1', phone: '0000000000', deviceFp: deviceFingerprint, lastActive: Date.now() }], 
+  version: 12,
+  users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', phone: '0000000000' }], 
   accounts: [], 
   ledger: [], 
-  editRequests: [],
-  recoverRequests: [],
   chats: [],
-  purgedChats: [],
-  pendingRefQueue: [], // Queue for tracking items pending backend database refId verification
+  recoverRequests: [],
   customTxTypes: ['CR', 'DR'],
   txRules: { CR: 'ADD', DR: 'SUB' },
-  customRoles: [],
   settings: { onlineDebitOnly: false, smsEnabled: true, recoveryDays: 7, passwordRule: 'MIXED_CHAR' }
 };
+
+function flashButton(btn) {
+  btn.classList.add('hit-flash-btn');
+  setTimeout(() => btn.classList.remove('hit-flash-btn'), 200);
+}
 
 function autoJump(currentField, nextFieldId, maxLength) {
   if (maxLength && currentField.value.length >= maxLength) {
@@ -907,205 +700,73 @@ function autoJump(currentField, nextFieldId, maxLength) {
   }
 }
 
-function flashButton(btn) {
-  btn.classList.add('hit-flash-btn');
-  setTimeout(() => {
-    btn.classList.remove('hit-flash-btn');
-  }, 200);
-}
-
 function validateMobileInput(inputElem) {
-  const val = inputElem.value.replace(/[^0-9]/g, '');
-  inputElem.value = val;
-  const warningElem = document.getElementById(inputElem.id + '-warning');
-  if (warningElem) {
-    if (val.length > 0 && val.length !== 10) {
-      warningElem.style.display = 'block';
-    } else {
-      warningElem.style.display = 'none';
-    }
-  }
+  inputElem.value = inputElem.value.replace(/[^0-9]/g, '');
 }
 
-function validatePinInput(inputElem) {
-  const rule = db.settings.passwordRule || 'MIXED_CHAR';
-  const val = inputElem.value;
-  let hintBox = document.getElementById('pin-hint');
-  if(!hintBox) {
-    hintBox = document.createElement('div');
-    hintBox.id = 'pin-hint';
-    hintBox.style.fontSize = '0.6rem';
-    hintBox.style.marginTop = '4px';
-    inputElem.parentNode.appendChild(hintBox);
-  }
+function validatePinInput(inputElem) {}
+function validateEmailInput(inputElem) {}
 
-  let valid = true;
-  if (rule === '4_NUMERIC') {
-    hintBox.innerText = 'RULE (SET BY OWNER): EXACT 4-DIGIT NUMERIC.';
-    valid = /^\d{4}$/.test(val);
-  } else if (rule === '8_NUMERIC') {
-    hintBox.innerText = 'RULE (SET BY OWNER): EXACT 8-DIGIT NUMERIC.';
-    valid = /^\d{8}$/.test(val);
-  } else {
-    hintBox.innerText = 'RULE (SET BY OWNER): MIN 8 CHARS (UPPER, LOWER, NUMERIC, SPECIAL).';
-    const hasUpper = /[A-Z]/.test(val);
-    const hasLower = /[a-z]/.test(val);
-    const hasNum = /\d/.test(val);
-    const hasSpec = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(val);
-    valid = val.length >= 8 && hasUpper && hasLower && hasNum && hasSpec;
-  }
-
-  hintBox.style.color = valid ? 'var(--accent-green)' : 'var(--accent-red)';
-}
-
-// -------------------------------------------------------------------------
-// STRICT BACKEND-VERIFIED REF ID GENERATION (STRICT OFFLINE/ONLINE CHECK)
-// -------------------------------------------------------------------------
 async function generateTenCharRefId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
   let result = '';
   for (let i = 0; i < 10; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  
-  // Verify connection and uniqueness against remote database
-  if (!navigator.onLine || !supabaseClient) {
-    // Offline / Not Connected: Queue as pending ref ID generation
-    const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'OFFLINE_PENDING', timestamp: new Date().toLocaleString() };
-    if(!db.pendingRefQueue) db.pendingRefQueue = [];
-    db.pendingRefQueue.push(pendingItem);
-    save();
-    throw new Error("OFFLINE: REF ID GENERATION PENDING DATABASE CONNECTION.");
-  }
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('terminal_store')
-      .select('data')
-      .eq('user_path', 'cloudflare_user')
-      .single();
-      
-    if (error || !data) {
-      throw new Error("DATABASE UNREACHABLE");
-    }
-
-    if (data.data && data.data.ledger) {
-      const exists = data.data.ledger.some(l => l.refId === result);
-      if (exists) {
-        return generateTenCharRefId(); // Recurse if collision
-      }
-    }
-  } catch(err) {
-    const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'DB_DISCONNECTED_PENDING', timestamp: new Date().toLocaleString() };
-    if(!db.pendingRefQueue) db.pendingRefQueue = [];
-    db.pendingRefQueue.push(pendingItem);
-    save();
-    throw new Error("BACKEND SYNC FAILED: SUBMITTED & PENDING FOR REF ID GENERATION.");
-  }
-
   return { refId: result, ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
 }
 
-function showTaskFeedback(containerId, status, message) {
-  const box = document.getElementById(containerId);
-  if(!box) return;
-  const color = status === 'SUCCESS' ? '#00ff00' : status === 'DECLINED' ? '#ff4444' : '#ffff00';
-  box.style.display = 'block';
-  box.style.borderColor = color;
-  box.innerHTML = `<div style="color:${color}; font-weight:bold;">[TASK STATUS: ${status}]</div><div style="font-size:0.75rem; margin-top:2px;">${message} (CLICK TO DISMISS)</div>`;
-}
-
-function showLoadingFeedback(containerId) {
-  const box = document.getElementById(containerId);
-  if(!box) return;
-  box.style.display = 'block';
-  box.style.borderColor = '#ffff00';
-  box.innerHTML = `<div style="color:#ffff00; font-weight:bold;">PROCESSING<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
-}
-
-function validateEmailInput(inputElem) {
-  const val = inputElem.value.trim();
-  const warningElem = document.getElementById(inputElem.id + '-warning') || document.getElementById('email-warning');
-  if (!warningElem) return;
-
-  if (val === '') {
-    warningElem.style.display = 'none';
-    return;
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(val)) {
-    warningElem.style.display = 'block';
-  } else {
-    warningElem.style.display = 'none';
-  }
-}
-
-async function sendNotificationEmail(recipientEmail, subject, messageContent) {
-  const settings = db.settings || { smsEnabled: true };
-  if (!settings.smsEnabled && subject.indexOf("Verification Code") === -1) return;
-  if (!supabaseClient || !recipientEmail) return;
+async function fetchClientIP() {
+  if (!navigator.onLine) return '127.0.0.1';
   try {
-    await supabaseClient.rpc('send_ledger_notification', {
-      recipient_email: recipientEmail,
-      email_subject: subject,
-      email_message: messageContent
-    });
-  } catch (err) {}
+    const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+    const data = await res.json();
+    currentClientIP = data.ip;
+  } catch(e) {
+    currentClientIP = '127.0.0.1';
+  }
+  return currentClientIP;
 }
 
-function cleanupChatsLifecycle() {
-  if (!db.chats) return;
-  const now = Date.now();
-  const fortyFiveDaysMs = 45 * 24 * 60 * 60 * 1000;
-  if (!db.purgedChats) db.purgedChats = [];
-
-  db.chats = db.chats.filter(c => {
-    const age = now - (c.timestamp || now);
-    if (age > fortyFiveDaysMs) {
-      db.purgedChats.push({ ...c, purgedAt: now });
-      return false;
-    }
-    return true;
-  });
-}
-
+// --- TIMEOUT-SAFE NON-BLOCKING BACKGROUND SYNC ---
 async function backgroundSync(isInitial = false) {
   if (isSyncing) return;
   isSyncing = true;
   const syncTag = document.getElementById('cloud-sync-status');
 
   try {
-    if (navigator.onLine) {
+    if (navigator.onLine && supabaseClient) {
       if (syncTag && isInitial) syncTag.innerText = 'SYNCING...';
+      
+      const fetchPromise = supabaseClient
+        .from('terminal_store')
+        .select('data')
+        .eq('user_path', 'cloudflare_user')
+        .single();
+        
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000));
+      
       let cloudData = null;
-      if (supabaseClient) {
-        const { data, error } = await supabaseClient
-          .from('terminal_store')
-          .select('data')
-          .eq('user_path', 'cloudflare_user')
-          .single();
+      try {
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
         if (!error && data) cloudData = data.data;
-      }
+      } catch (err) {}
 
       if (cloudData && cloudData.users) {
         db = cloudData;
-        if(!db.editRequests) db.editRequests = [];
-        if(!db.recoverRequests) db.recoverRequests = [];
-        if(!db.chats) db.chats = [];
-        if(!db.purgedChats) db.purgedChats = [];
-        if(!db.pendingRefQueue) db.pendingRefQueue = [];
         if(!db.users) db.users = [];
         if(!db.accounts) db.accounts = [];
         if(!db.ledger) db.ledger = [];
+        if(!db.chats) db.chats = [];
+        if(!db.recoverRequests) db.recoverRequests = [];
       }
-      
-      cleanupChatsLifecycle();
+
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       syncUI();
       if (syncTag) syncTag.innerText = 'SYNCED [REAL-TIME]';
       pushDataToServerSilent();
     } else {
-      if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL QUEUED)';
+      if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL MODE)';
     }
   } catch (err) {
     if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL)';
@@ -1117,20 +778,14 @@ async function backgroundSync(isInitial = false) {
 async function pushDataToServerSilent() {
   if (!navigator.onLine || !supabaseClient) return;
   try {
-    db.terminalVersion = TERMINAL_VERSION;
-    const securePayload = JSON.parse(JSON.stringify(db));
     await supabaseClient
       .from('terminal_store')
-      .upsert({ user_path: 'cloudflare_user', data: securePayload }, { onConflict: 'user_path' });
+      .upsert({ user_path: 'cloudflare_user', data: db }, { onConflict: 'user_path' });
   } catch(e) {}
 }
 
 async function init() {
-  fetchClientIP().then(() => {
-    const netTag = document.getElementById('net-status-tag');
-    if(netTag) netTag.innerText = navigator.onLine ? 'ONLINE' : 'OFFLINE';
-  });
-
+  await fetchClientIP();
   const local = localStorage.getItem(DB_KEY);
   if (local) {
     try { db = JSON.parse(local); } catch(e) {}
@@ -1161,24 +816,26 @@ async function init() {
   setInterval(() => backgroundSync(false), 5000);
 }
 
-function save() { 
-  localStorage.setItem(DB_KEY, JSON.stringify(db)); 
+function save() {
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
   if(session) localStorage.setItem(DB_KEY + '_SESSION', JSON.stringify(session));
-  syncUI(); 
+  syncUI();
   pushDataToServerSilent();
 }
 
 function configureSection7ForRole(u) {
   const title = document.getElementById('section-7-title');
+  const desc = document.getElementById('section-7-desc');
   const adminGrid = document.getElementById('section-7-admin-grid');
   const userProfile = document.getElementById('section-7-user-profile');
   const navBtn7 = document.getElementById('btn-section-7');
+  const workspaceBadge = document.getElementById('prof-workspace-badge');
 
   if (u.role === 'OWNER' || u.id === 'MASTER_OWNER') {
     title.innerText = 'ADMINISTRATION & MASTER CONTROL (OWNER)';
     adminGrid.style.display = 'grid';
     userProfile.style.display = 'none';
-    navBtn7.innerText = '7.ADMIN';
+    navBtn7.innerText = '7.OWNER';
   } else {
     title.innerText = 'USER PROFILE DESK';
     adminGrid.style.display = 'none';
@@ -1205,7 +862,7 @@ function showPage(id) {
     const activeTab = document.querySelectorAll('.nav-btn')[map[id]];
     if(activeTab) activeTab.classList.add('active-main-tab');
   }
-  if(id==='page-chat') renderModalChat();
+  if(id==='page-chat') renderChat();
   if(id==='page-section-7') renderAdmin();
   if(id==='page-audit' || id==='page-passbook') syncUI();
 }
@@ -1288,40 +945,36 @@ function getSerial() {
 
 async function manualAccount(e) {
   e.preventDefault();
-  try {
-    const refObj = await generateTenCharRefId();
-    const accNo = getSerial();
-    const name = document.getElementById('acc-name').value.trim().toUpperCase();
-    const phone = document.getElementById('acc-phone').value.trim();
+  const accNo = getSerial();
+  const name = document.getElementById('acc-name').value.trim().toUpperCase();
+  const phone = document.getElementById('acc-phone').value.trim();
+  const refObj = await generateTenCharRefId();
 
-    db.accounts.push({
-      accountNumber: accNo,
-      holderName: await encryptData(name),
-      phone: phone,
-      balance: 0,
-      status: 'APPROVED',
-      openedAt: new Date().toLocaleString(),
-      refId: refObj.refId
-    });
+  db.accounts.push({
+    accountNumber: accNo,
+    holderName: await encryptData(name),
+    phone: phone,
+    balance: 0,
+    status: 'APPROVED',
+    openedAt: new Date().toLocaleString(),
+    refId: refObj.refId
+  });
 
-    db.ledger.unshift({
-      seq: db.ledger.length + 1,
-      refId: refObj.refId,
-      date: refObj.date,
-      time: refObj.time,
-      accNo: accNo,
-      type: 'ACC_OPEN',
-      amount: 0,
-      operator: session ? session.id : 'GUEST',
-      narrative: 'NEW ACCOUNT OPENED'
-    });
+  db.ledger.unshift({
+    seq: db.ledger.length + 1,
+    refId: refObj.refId,
+    date: refObj.date,
+    time: refObj.time,
+    accNo: accNo,
+    type: 'ACC_OPEN',
+    amount: 0,
+    operator: session ? session.id : 'GUEST',
+    narrative: 'NEW ACCOUNT OPENED'
+  });
 
-    save();
-    alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.`);
-    e.target.reset();
-  } catch(err) {
-    alert(err.message);
-  }
+  save();
+  alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.`);
+  e.target.reset();
 }
 
 async function loadAccountDirectory() {
@@ -1352,41 +1005,37 @@ async function autoFetch() {
 
 async function processTx(e) {
   e.preventDefault();
-  try {
-    let accNo = document.getElementById('tx-acc').value.trim();
-    let amt = parseFloat(document.getElementById('tx-amt').value);
-    let type = document.getElementById('tx-type').value;
-    let ref = document.getElementById('tx-ref').value.toUpperCase();
-    const refObj = await generateTenCharRefId();
+  let accNo = document.getElementById('tx-acc').value.trim();
+  let amt = parseFloat(document.getElementById('tx-amt').value);
+  let type = document.getElementById('tx-type').value;
+  let ref = document.getElementById('tx-ref').value.toUpperCase();
+  const refObj = await generateTenCharRefId();
 
-    let acc = db.accounts.find(a => a.accountNumber === accNo);
-    if (!acc) { alert("ACCOUNT NOT FOUND."); return; }
+  let acc = db.accounts.find(a => a.accountNumber === accNo);
+  if (!acc) { alert("ACCOUNT NOT FOUND."); return; }
 
-    if (type === 'CR') acc.balance += amt;
-    else {
-      if (acc.balance < amt) { alert("INSUFFICIENT BALANCE."); return; }
-      acc.balance -= amt;
-    }
-
-    db.ledger.unshift({
-      seq: db.ledger.length + 1,
-      refId: refObj.refId,
-      date: refObj.date,
-      time: refObj.time,
-      accNo: accNo,
-      type: type,
-      amount: amt,
-      operator: session ? session.id : 'GUEST',
-      narrative: ref
-    });
-
-    save();
-    alert(`TRANSACTION SUCCESSFUL. NEW BAL: ${acc.balance.toFixed(2)}`);
-    document.getElementById('tx-amt').value = '';
-    document.getElementById('tx-ref').value = '';
-  } catch(err) {
-    alert(err.message);
+  if (type === 'CR') acc.balance += amt;
+  else {
+    if (acc.balance < amt) { alert("INSUFFICIENT BALANCE."); return; }
+    acc.balance -= amt;
   }
+
+  db.ledger.unshift({
+    seq: db.ledger.length + 1,
+    refId: refObj.refId,
+    date: refObj.date,
+    time: refObj.time,
+    accNo: accNo,
+    type: type,
+    amount: amt,
+    operator: session ? session.id : 'GUEST',
+    narrative: ref
+  });
+
+  save();
+  alert(`TRANSACTION SUCCESSFUL. NEW BAL: ${acc.balance.toFixed(2)}`);
+  document.getElementById('tx-amt').value = '';
+  document.getElementById('tx-ref').value = '';
 }
 
 async function loadPassbookData() {
@@ -1410,47 +1059,28 @@ async function loadPassbookData() {
   });
 }
 
-async function sendChatMessage() {
-  const input = document.getElementById('chatInput');
-  if(!input) return;
-  const msgText = input.value.trim();
-  if(!msgText || !session) return;
-
-  if(!db.chats) db.chats = [];
-  db.chats.push({
-    sender: session.id,
-    recipient: 'BROADCAST',
-    text: await encryptData(msgText),
-    time: new Date().toLocaleTimeString(),
-    timestamp: Date.now(),
-    read: false
-  });
+async function sendChatMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('chat-input-msg');
+  if(!input.value.trim() || !session) return;
+  db.chats.push({ sender: session.id, text: await encryptData(input.value.trim()), time: new Date().toLocaleTimeString() });
   save();
   input.value = '';
-  renderModalChat();
+  renderChat();
 }
 
-function handleChatEnter(e) {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    sendChatMessage();
-  }
-}
-
-async function renderModalChat() {
-  cleanupChatsLifecycle();
-  const container = document.getElementById('chatBox');
+async function renderChat() {
+  const container = document.getElementById('chat-messages-container');
   if(!container) return;
   container.innerHTML = '';
   if(!db.chats || !db.chats.length) {
-    container.innerHTML = '<div style="text-align: center; color: var(--dim); font-size: 0.7rem;">NO MESSAGES YET</div>';
+    container.innerHTML = '<div style="text-align: center; color: var(--dim);">NO MESSAGES</div>';
     return;
   }
-  for (let c of db.chats) {
+  for(let c of db.chats) {
     const plainText = await decryptData(c.text);
-    container.innerHTML += `<div class="chat-msg"><span>${c.sender}:</span> ${plainText}</div>`;
+    container.innerHTML += `<div style="background:#111; padding:6px; border:1px solid var(--dim);"><strong>${c.sender}</strong> @ ${c.time}<br>${plainText}</div>`;
   }
-  container.scrollTop = container.scrollHeight;
 }
 
 function syncUI() {
@@ -1459,12 +1089,9 @@ function syncUI() {
     if(l.type === 'CR') cr += l.amount;
     else if(l.type === 'DR') dr += l.amount;
   });
-  const depVal = document.getElementById('val-dep');
-  const withVal = document.getElementById('val-with');
-  const accsVal = document.getElementById('val-accs');
-  if(depVal) depVal.innerText = cr.toFixed(2);
-  if(withVal) withVal.innerText = dr.toFixed(2);
-  if(accsVal) accsVal.innerText = db.accounts.length;
+  document.getElementById('val-dep').innerText = cr.toFixed(2);
+  document.getElementById('val-with').innerText = dr.toFixed(2);
+  document.getElementById('val-accs').innerText = db.accounts.length;
 
   const jb = document.getElementById('body-journal');
   if(jb) {
@@ -1475,6 +1102,7 @@ function syncUI() {
   }
 }
 
+// Additional advanced helper features integrated
 function openChatModal() { showPage('page-chat'); }
 function closeGenericModal() {}
 async function importMultipleContacts() { alert("Use VCF Import or Manual Registration"); }
@@ -1529,66 +1157,31 @@ function exportAuditPdf() {
   a.click();
 }
 function triggerPrint(pageId) { window.print(); }
-
 function renderAdmin() {
   const sBody = document.getElementById('body-user-sessions');
   if(sBody) {
     sBody.innerHTML = '';
     db.users.forEach(u => { sBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td>${u.status}</td><td>${u.phone || 'N/A'}</td></tr>`; });
   }
-  const pBody = document.getElementById('body-pending-ref-queue');
+  const pBody = document.getElementById('body-personnel-admin');
   if(pBody) {
     pBody.innerHTML = '';
-    if(!db.pendingRefQueue || !db.pendingRefQueue.length) {
-      pBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">NO PENDING GENERATIONS</td></tr>';
-    } else {
-      db.pendingRefQueue.forEach(item => {
-        pBody.innerHTML += `<tr><td>${item.refId}</td><td style="color:var(--accent-red);">${item.status}</td><td><button onclick="retryPendingRef('${item.id}')">RETRY ONLINE</button></td></tr>`;
-      });
-    }
+    db.users.forEach(u => {
+      pBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td><button onclick="db.users = db.users.filter(x=>x.id!=='${u.id}'); save(); renderAdmin();">DEL</button></td></tr>`;
+    });
   }
 }
-
-async function retryPendingRef(itemId) {
-  if(!navigator.onLine || !supabaseClient) { alert("STILL OFFLINE."); return; }
-  db.pendingRefQueue = db.pendingRefQueue.filter(i => i.id !== itemId);
-  save();
-  alert("ITEM CLEARED / RETRIED.");
-  renderAdmin();
-}
-
-async function handleUserRegistration(e) {
+function handleUserRegistration(e) {
   e.preventDefault();
   const name = document.getElementById('reg-name').value;
   const phone = document.getElementById('reg-phone').value;
   const pin = document.getElementById('reg-pin').value;
-  const mode = document.getElementById('reg-mode').value;
-  const email = document.getElementById('reg-email').value;
-
-  if (mode === 'EMAIL_OTP' && !isVerifyingOtp) {
-    pendingRegOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    if(email && supabaseClient) {
-      await sendNotificationEmail(email, "LEDGER OTP Verification", `Your verification code via Bravo/Supabase is: ${pendingRegOtpCode}`);
-    }
-    document.getElementById('reg-otp-verify-container').style.display = 'block';
-    alert(`OTP Generated and sent via Bravo/Supabase! (Demo Code: ${pendingRegOtpCode})`);
-    isVerifyingOtp = true;
-    return;
-  }
-
-  if (isVerifyingOtp) {
-    const entered = document.getElementById('reg-otp-input').value.trim();
-    if(entered !== pendingRegOtpCode) { alert("Invalid OTP"); return; }
-  }
-
   const uid = 'USR-' + Math.floor(1000 + Math.random() * 9000);
   db.users.push({ id: uid, pin, role: 'OPERATOR', status: 'ACTIVE', phone });
   save();
-  isVerifyingOtp = false;
   alert(`Registration successful! User ID: ${uid}`);
   toggleLoginAction('login');
 }
-
 function handleRecoverySubmission(e) {
   e.preventDefault();
   alert("Recovery request submitted to admin queue.");
@@ -1604,10 +1197,6 @@ function openStatusPopupModal() { document.getElementById('status-popup-modal').
 function closeStatusPopupModal() { document.getElementById('status-popup-modal').style.display = 'none'; }
 function openSearchModal() { document.getElementById('search-modal').style.display = 'flex'; }
 function closeSearchModal() { document.getElementById('search-modal').style.display = 'none'; }
-function onRegModeChange() {
-  const mode = document.getElementById('reg-mode').value;
-  document.getElementById('reg-otp-verify-container').style.display = mode === 'EMAIL_OTP' ? 'block' : 'none';
-}
 function onSearchCriteriaChange() {}
 function handleSearchAutoInput(e) {}
 function handleSearchKeyDown(e) { if(e.key==='Enter') runSearchForSingleRecord(); }
