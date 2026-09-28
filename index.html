@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
-  <title>LEDGER // MASTER SECURE TERMINAL</title>
+  <title>LEDGER // MASTER TERMINAL</title>
 
   <style>
     :root { 
@@ -501,7 +501,7 @@
       </div>
     </div>
 
-    <!-- Chat Page (Section 5) - Broadcast Channel (No Recipient Input) -->
+    <!-- Chat Page (Section 5) -->
     <div class="view-page" id="page-chat">
       <div class="box" style="height: 75vh; display: flex; flex-direction: column; gap: 8px; position: relative;">
         <div class="box-title">
@@ -709,26 +709,27 @@
           </div>
         </div>
 
+        <!-- Pending Ref ID Generation List in Admin Panel -->
         <div id="panel-personnel" class="admin-sub-panel">
-          <div class="box-title"><span>USER EDIT, LOCK, DELETE, ROLE, TRANSFER & BACKUP</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <div class="box-title"><span>PENDING REF ID GENERATION & QUEUE</span> <button onclick="closeAdminSubPanels()" style="font-size:0.6rem; padding:2px 6px;">[CLOSE]</button></div>
+          <p class="dim" style="font-size:0.65rem; margin-bottom:6px;">ITEMS PENDING UNIQUE RE-VERIFICATION OR CREATED OFFLINE:</p>
           <div style="margin-bottom: 8px; display:flex; gap:6px;">
             <button class="inverted" onclick="exportBackupData(); flashButton(this);">[ EXPORT BACKUP ]</button>
             <button class="inverted" onclick="document.getElementById('backup-file-input').click()">[ RESTORE BACKUP ]</button>
             <input type="file" id="backup-file-input" accept=".json" style="display:none;" onchange="importBackupData(event)" />
           </div>
-          <div style="margin-bottom: 8px;">
-            <button class="inverted" onclick="adminRecoverChats(); flashButton(this);">[ ADMIN RECOVER PURGED CHATS (60-DAY) ]</button>
-          </div>
           <div class="table-container">
             <table>
               <thead>
                 <tr>
-                  <th style="width: 25%;">USER ID</th>
-                  <th style="width: 45%;">ROLE / STATUS</th>
-                  <th style="width: 30%;">ACTIONS</th>
+                  <th>PENDING ITEM / REF</th>
+                  <th>STATUS (ONLINE / OFFLINE)</th>
+                  <th>ACTION</th>
                 </tr>
               </thead>
-              <tbody id="body-personnel-admin"></tbody>
+              <tbody id="body-pending-ref-queue">
+                <tr><td colspan="3" style="text-align:center;">NO PENDING GENERATIONS</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -879,7 +880,7 @@ async function fetchClientIP() {
 }
 
 let db = { 
-  version: 27,
+  version: 28,
   terminalVersion: TERMINAL_VERSION,
   users: [{ id: 'MASTER_OWNER', pin: '9999', role: 'OWNER', status: 'ACTIVE', lastIp: '127.0.0.1', phone: '0000000000', deviceFp: deviceFingerprint, lastActive: Date.now() }], 
   accounts: [], 
@@ -888,6 +889,7 @@ let db = {
   recoverRequests: [],
   chats: [],
   purgedChats: [],
+  pendingRefQueue: [], // Queue for tracking items pending backend database refId verification
   customTxTypes: ['CR', 'DR'],
   txRules: { CR: 'ADD', DR: 'SUB' },
   customRoles: [],
@@ -957,7 +959,7 @@ function validatePinInput(inputElem) {
 }
 
 // -------------------------------------------------------------------------
-// 3.C: BACKEND-CHECKED REF ID GENERATION (TALKS TO SUPABASE)
+// STRICT BACKEND-VERIFIED REF ID GENERATION (STRICT OFFLINE/ONLINE CHECK)
 // -------------------------------------------------------------------------
 async function generateTenCharRefId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
@@ -966,21 +968,39 @@ async function generateTenCharRefId() {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   
-  if (supabaseClient && navigator.onLine) {
-    try {
-      const { data, error } = await supabaseClient
-        .from('terminal_store')
-        .select('data')
-        .eq('user_path', 'cloudflare_user')
-        .single();
-        
-      if (!error && data && data.data && data.data.ledger) {
-        const exists = data.data.ledger.some(l => l.refId === result);
-        if (exists) {
-          return generateTenCharRefId(); // Recurse if collision exists in cloud DB
-        }
+  // Verify connection and uniqueness against remote database
+  if (!navigator.onLine || !supabaseClient) {
+    // Offline / Not Connected: Queue as pending ref ID generation
+    const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'OFFLINE_PENDING', timestamp: new Date().toLocaleString() };
+    if(!db.pendingRefQueue) db.pendingRefQueue = [];
+    db.pendingRefQueue.push(pendingItem);
+    save();
+    throw new Error("OFFLINE: REF ID GENERATION PENDING DATABASE CONNECTION.");
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('terminal_store')
+      .select('data')
+      .eq('user_path', 'cloudflare_user')
+      .single();
+      
+    if (error || !data) {
+      throw new Error("DATABASE UNREACHABLE");
+    }
+
+    if (data.data && data.data.ledger) {
+      const exists = data.data.ledger.some(l => l.refId === result);
+      if (exists) {
+        return generateTenCharRefId(); // Recurse if collision
       }
-    } catch(e) {}
+    }
+  } catch(err) {
+    const pendingItem = { id: 'PENDING-' + Date.now(), refId: result, status: 'DB_DISCONNECTED_PENDING', timestamp: new Date().toLocaleString() };
+    if(!db.pendingRefQueue) db.pendingRefQueue = [];
+    db.pendingRefQueue.push(pendingItem);
+    save();
+    throw new Error("BACKEND SYNC FAILED: SUBMITTED & PENDING FOR REF ID GENERATION.");
   }
 
   return { refId: result, ip: currentClientIP, date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString() };
@@ -1020,10 +1040,9 @@ function validateEmailInput(inputElem) {
   }
 }
 
-// -------------------------------------------------------------------------
-// 3.D: SUPABASE RPC NOTIFICATION FOR EMAIL OTP (BRAVO RELAY)
-// -------------------------------------------------------------------------
 async function sendNotificationEmail(recipientEmail, subject, messageContent) {
+  const settings = db.settings || { smsEnabled: true };
+  if (!settings.smsEnabled && subject.indexOf("Verification Code") === -1) return;
   if (!supabaseClient || !recipientEmail) return;
   try {
     await supabaseClient.rpc('send_ledger_notification', {
@@ -1056,42 +1075,40 @@ async function backgroundSync(isInitial = false) {
   const syncTag = document.getElementById('cloud-sync-status');
 
   try {
-    if (navigator.onLine && supabaseClient) {
+    if (navigator.onLine) {
       if (syncTag && isInitial) syncTag.innerText = 'SYNCING...';
-      
-      const fetchPromise = supabaseClient
-        .from('terminal_store')
-        .select('data')
-        .eq('user_path', 'cloudflare_user')
-        .single();
-        
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000));
-      
       let cloudData = null;
-      try {
-        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient
+          .from('terminal_store')
+          .select('data')
+          .eq('user_path', 'cloudflare_user')
+          .single();
         if (!error && data) cloudData = data.data;
-      } catch (err) {}
+      }
 
       if (cloudData && cloudData.users) {
         db = cloudData;
+        if(!db.editRequests) db.editRequests = [];
+        if(!db.recoverRequests) db.recoverRequests = [];
+        if(!db.chats) db.chats = [];
+        if(!db.purgedChats) db.purgedChats = [];
+        if(!db.pendingRefQueue) db.pendingRefQueue = [];
         if(!db.users) db.users = [];
         if(!db.accounts) db.accounts = [];
         if(!db.ledger) db.ledger = [];
-        if(!db.chats) db.chats = [];
-        if(!db.recoverRequests) db.recoverRequests = [];
-      } else if (db.accounts.length > 0) {
-        await pushDataToServerSilent();
       }
-
+      
+      cleanupChatsLifecycle();
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       syncUI();
       if (syncTag) syncTag.innerText = 'SYNCED [REAL-TIME]';
+      pushDataToServerSilent();
     } else {
-      if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL MODE)';
+      if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL QUEUED)';
     }
   } catch (err) {
-    if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL MODE)';
+    if (syncTag) syncTag.innerText = 'OFFLINE (LOCAL)';
   } finally {
     isSyncing = false;
   }
@@ -1101,9 +1118,10 @@ async function pushDataToServerSilent() {
   if (!navigator.onLine || !supabaseClient) return;
   try {
     db.terminalVersion = TERMINAL_VERSION;
+    const securePayload = JSON.parse(JSON.stringify(db));
     await supabaseClient
       .from('terminal_store')
-      .upsert({ user_path: 'cloudflare_user', data: db }, { onConflict: 'user_path' });
+      .upsert({ user_path: 'cloudflare_user', data: securePayload }, { onConflict: 'user_path' });
   } catch(e) {}
 }
 
@@ -1143,10 +1161,10 @@ async function init() {
   setInterval(() => backgroundSync(false), 5000);
 }
 
-function save() {
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
+function save() { 
+  localStorage.setItem(DB_KEY, JSON.stringify(db)); 
   if(session) localStorage.setItem(DB_KEY + '_SESSION', JSON.stringify(session));
-  syncUI();
+  syncUI(); 
   pushDataToServerSilent();
 }
 
@@ -1270,36 +1288,40 @@ function getSerial() {
 
 async function manualAccount(e) {
   e.preventDefault();
-  const accNo = getSerial();
-  const name = document.getElementById('acc-name').value.trim().toUpperCase();
-  const phone = document.getElementById('acc-phone').value.trim();
-  const refObj = await generateTenCharRefId();
+  try {
+    const refObj = await generateTenCharRefId();
+    const accNo = getSerial();
+    const name = document.getElementById('acc-name').value.trim().toUpperCase();
+    const phone = document.getElementById('acc-phone').value.trim();
 
-  db.accounts.push({
-    accountNumber: accNo,
-    holderName: await encryptData(name),
-    phone: phone,
-    balance: 0,
-    status: 'APPROVED',
-    openedAt: new Date().toLocaleString(),
-    refId: refObj.refId
-  });
+    db.accounts.push({
+      accountNumber: accNo,
+      holderName: await encryptData(name),
+      phone: phone,
+      balance: 0,
+      status: 'APPROVED',
+      openedAt: new Date().toLocaleString(),
+      refId: refObj.refId
+    });
 
-  db.ledger.unshift({
-    seq: db.ledger.length + 1,
-    refId: refObj.refId,
-    date: refObj.date,
-    time: refObj.time,
-    accNo: accNo,
-    type: 'ACC_OPEN',
-    amount: 0,
-    operator: session ? session.id : 'GUEST',
-    narrative: 'NEW ACCOUNT OPENED'
-  });
+    db.ledger.unshift({
+      seq: db.ledger.length + 1,
+      refId: refObj.refId,
+      date: refObj.date,
+      time: refObj.time,
+      accNo: accNo,
+      type: 'ACC_OPEN',
+      amount: 0,
+      operator: session ? session.id : 'GUEST',
+      narrative: 'NEW ACCOUNT OPENED'
+    });
 
-  save();
-  alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.`);
-  e.target.reset();
+    save();
+    alert(`ACCOUNT ${accNo} CREATED SUCCESSFULLY.`);
+    e.target.reset();
+  } catch(err) {
+    alert(err.message);
+  }
 }
 
 async function loadAccountDirectory() {
@@ -1330,37 +1352,41 @@ async function autoFetch() {
 
 async function processTx(e) {
   e.preventDefault();
-  let accNo = document.getElementById('tx-acc').value.trim();
-  let amt = parseFloat(document.getElementById('tx-amt').value);
-  let type = document.getElementById('tx-type').value;
-  let ref = document.getElementById('tx-ref').value.toUpperCase();
-  const refObj = await generateTenCharRefId();
+  try {
+    let accNo = document.getElementById('tx-acc').value.trim();
+    let amt = parseFloat(document.getElementById('tx-amt').value);
+    let type = document.getElementById('tx-type').value;
+    let ref = document.getElementById('tx-ref').value.toUpperCase();
+    const refObj = await generateTenCharRefId();
 
-  let acc = db.accounts.find(a => a.accountNumber === accNo);
-  if (!acc) { alert("ACCOUNT NOT FOUND."); return; }
+    let acc = db.accounts.find(a => a.accountNumber === accNo);
+    if (!acc) { alert("ACCOUNT NOT FOUND."); return; }
 
-  if (type === 'CR') acc.balance += amt;
-  else {
-    if (acc.balance < amt) { alert("INSUFFICIENT BALANCE."); return; }
-    acc.balance -= amt;
+    if (type === 'CR') acc.balance += amt;
+    else {
+      if (acc.balance < amt) { alert("INSUFFICIENT BALANCE."); return; }
+      acc.balance -= amt;
+    }
+
+    db.ledger.unshift({
+      seq: db.ledger.length + 1,
+      refId: refObj.refId,
+      date: refObj.date,
+      time: refObj.time,
+      accNo: accNo,
+      type: type,
+      amount: amt,
+      operator: session ? session.id : 'GUEST',
+      narrative: ref
+    });
+
+    save();
+    alert(`TRANSACTION SUCCESSFUL. NEW BAL: ${acc.balance.toFixed(2)}`);
+    document.getElementById('tx-amt').value = '';
+    document.getElementById('tx-ref').value = '';
+  } catch(err) {
+    alert(err.message);
   }
-
-  db.ledger.unshift({
-    seq: db.ledger.length + 1,
-    refId: refObj.refId,
-    date: refObj.date,
-    time: refObj.time,
-    accNo: accNo,
-    type: type,
-    amount: amt,
-    operator: session ? session.id : 'GUEST',
-    narrative: ref
-  });
-
-  save();
-  alert(`TRANSACTION SUCCESSFUL. NEW BAL: ${acc.balance.toFixed(2)}`);
-  document.getElementById('tx-amt').value = '';
-  document.getElementById('tx-ref').value = '';
 }
 
 async function loadPassbookData() {
@@ -1503,19 +1529,32 @@ function exportAuditPdf() {
   a.click();
 }
 function triggerPrint(pageId) { window.print(); }
+
 function renderAdmin() {
   const sBody = document.getElementById('body-user-sessions');
   if(sBody) {
     sBody.innerHTML = '';
     db.users.forEach(u => { sBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td>${u.status}</td><td>${u.phone || 'N/A'}</td></tr>`; });
   }
-  const pBody = document.getElementById('body-personnel-admin');
+  const pBody = document.getElementById('body-pending-ref-queue');
   if(pBody) {
     pBody.innerHTML = '';
-    db.users.forEach(u => {
-      pBody.innerHTML += `<tr><td>${u.id}</td><td>${u.role}</td><td><button onclick="db.users = db.users.filter(x=>x.id!=='${u.id}'); save(); renderAdmin();">DEL</button></td></tr>`;
-    });
+    if(!db.pendingRefQueue || !db.pendingRefQueue.length) {
+      pBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">NO PENDING GENERATIONS</td></tr>';
+    } else {
+      db.pendingRefQueue.forEach(item => {
+        pBody.innerHTML += `<tr><td>${item.refId}</td><td style="color:var(--accent-red);">${item.status}</td><td><button onclick="retryPendingRef('${item.id}')">RETRY ONLINE</button></td></tr>`;
+      });
+    }
   }
+}
+
+async function retryPendingRef(itemId) {
+  if(!navigator.onLine || !supabaseClient) { alert("STILL OFFLINE."); return; }
+  db.pendingRefQueue = db.pendingRefQueue.filter(i => i.id !== itemId);
+  save();
+  alert("ITEM CLEARED / RETRIED.");
+  renderAdmin();
 }
 
 async function handleUserRegistration(e) {
