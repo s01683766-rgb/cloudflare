@@ -1654,5 +1654,57 @@ function pdfSave(k){const cols=['#DETAILS',...PCOLS[k]],P=pset(k),on=[...documen
  $('panel-report').querySelector('.box-title span').insertAdjacentHTML('afterend',' '+G('report'))}
 
 </script>
+<script>
+/* ===== PATCH v18: instant "PROCESSING" feedback, message badge fix, chat recipient pick/search ===== */
+$('page-chat').insertAdjacentHTML('beforebegin','<div id="toast" style="display:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:99998;background:#000;color:var(--yellow);border:1px solid var(--yellow);padding:8px 16px;font-weight:bold;max-width:90%;text-align:center"></div>');
+function toast(m){const t=$('toast');t.innerText=m;t.style.display=m?'block':'none'}
+['processTx','manualAccount','handleUserRegistration','handleRecoverySubmission','sendChatMessage','adminCreateUser','saveAccEdit','handleLogon'].forEach(n=>{const o=window[n];
+ window[n]=async function(e){const f=e&&e.target,b=f&&f.querySelector?f.querySelector('button[type=submit]'):null,t=b&&b.innerText;if(b){b.disabled=true;b.innerText='PROCESSING...'}toast('PROCESSING... PLEASE WAIT');
+  try{return await o.apply(this,arguments)}finally{toast('');if(b){b.disabled=false;b.innerText=t}}}});
+/* ---- chat: recipient can be picked from a list or searched ---- */
+let chTo='STAFF';window.curPage='';
+$('ch-mode').options[0].insertAdjacentHTML('afterend','<option value="user">STAFF USER (PICK / SEARCH)</option>');
+$('ch-target').insertAdjacentHTML('afterend','<datalist id="ch-dl"></datalist>');
+chMode=async function(){const m=$('ch-mode').value,t=$('ch-target');t.value='';chTo=m==='STAFF'?'STAFF':null;$('ch-label').value=m==='STAFF'?'ALL STAFF':'';t.style.display=m==='STAFF'?'none':'';
+ t.maxLength=m==='acc'?11:m==='mob'?10:40;t.inputMode=(m==='acc'||m==='mob')?'numeric':'text';t.placeholder=m==='acc'?'11-DIGIT ACC NO':m==='mob'?'10-DIGIT MOBILE':m==='user'?'PICK OR SEARCH USER ID / NAME':'PICK OR SEARCH HOLDER NAME';
+ let dl='';if(m==='user')dl=db.users.filter(u=>u.id!==session.id).map(u=>`<option value="${esc(u.id)}">${esc(u.name||u.role)}</option>`).join('');
+ if(m==='name')for(const a of db.accounts)dl+=`<option value="${esc(await decryptData(a.holderName))}"></option>`;
+ $('ch-dl').innerHTML=dl;if(m==='user'||m==='name')t.setAttribute('list','ch-dl');else t.removeAttribute('list');renderChat();if(m!=='STAFF')t.focus()};
+chTarget=async function(){const m=$('ch-mode').value,t=$('ch-target');if(m==='acc'||m==='mob')t.value=t.value.replace(/\D/g,'');const v=t.value.trim().toUpperCase();chTo=null;let lab='';
+ if(m==='user'){const u=db.users.find(x=>x.id.toUpperCase()===v)||(v.length>1?db.users.find(x=>x.id!==session.id&&(x.id.toUpperCase().includes(v)||String(x.name||'').toUpperCase().includes(v))):null);if(u&&u.id!==session.id){chTo='U:'+u.id;lab=u.id+' ('+u.role+')'}}
+ else{let a=null;if(m==='acc'&&v.length===11)a=db.accounts.find(x=>x.accountNumber===v);if(m==='mob'&&v.length===10)a=db.accounts.find(x=>x.phone===v);
+  if(m==='name'&&v.length>1)for(const x of db.accounts)if((await decryptData(x.holderName)).toUpperCase().includes(v)){a=x;break}
+  if(a){chTo=a.accountNumber;lab=a.accountNumber+' '+await decryptData(a.holderName)}}
+ $('ch-label').value=chTo?lab:(v?'NOT FOUND':'');renderChat()};
+sendChatMessage=async function(e){e.preventDefault();const i=$('chat-input-msg');if(!i.value.trim()||!session)return;if(!chTo)return alert('SELECT A VALID RECIPIENT FIRST');
+ db.chats.push({id:uid(),sender:session.id,to:chTo,text:await encryptData(i.value.trim()),time:new Date().toLocaleTimeString(),ts:Date.now(),mt:Date.now(),sync:'PENDING'});i.value='';save();i.focus()};
+/* ---- badge: counts unread from others; "open" = chat page is really the current page ---- */
+renderChat=async function(){const c=$('chat-messages-container');if(!c||!session)return;const me=session.id,key='CHSEEN_'+me,open=window.curPage==='page-chat';
+ if(localStorage[key]===undefined)localStorage[key]=Date.now();const seen=+localStorage[key];
+ const vis=x=>!String(x.to).startsWith('U:')||x.sender===me||x.to==='U:'+me,un=db.chats.filter(x=>vis(x)&&x.sender!==me&&(x.ts||0)>seen).length;
+ $('msg-badge').innerText=open?0:un;if(!open)return;localStorage[key]=Date.now();
+ const dm=chTo&&chTo.startsWith('U:')?chTo.slice(2):null,L=!chTo?[]:db.chats.filter(x=>dm?((x.sender===me&&x.to===chTo)||(x.sender===dm&&x.to==='U:'+me)):x.to===chTo).sort((a,b)=>(a.ts||0)-(b.ts||0));let h='';
+ for(const x of L)h+=`<div style="background:#111;padding:6px;border:1px solid var(--dim)"><b>${esc(x.sender)}</b> @ ${esc(x.time)}${x.sync==='PENDING'?' <span class="dim">[PENDING]</span>':''}<br>${esc(await decryptData(x.text))}</div>`;
+ c.innerHTML=h||'<div style="text-align:center;color:var(--dim)">'+(chTo?'NO MESSAGES':'SELECT A RECIPIENT')+'</div>';c.scrollTop=c.scrollHeight};
+{const o=showPage;showPage=function(id){const prev=window.curPage;window.curPage=id;if(id==='page-chat'&&!can('chat'))window.curPage=prev;const r=o.apply(this,arguments);renderChat();return r}}
+
+</script>
+<script>
+/* ===== PATCH v19: FULL DETAILS in search ===== */
+$('autofill-extra-desc').parentElement.insertAdjacentHTML('afterend','<div style="text-align:right;margin-top:6px"><button class="inverted" onclick="showFull()" style="width:auto;padding:4px 10px;font-size:.7rem">[ FULL DETAILS ]</button></div>');
+async function showFull(){const n=window.lastFetchedAccNo,a=n&&db.accounts.find(x=>x.accountNumber===n);if(!a)return alert('SEARCH A RECORD FIRST');
+ const nm=await decryptData(a.holderName),ct=db.contacts.find(x=>(x.phones||[]).some(p=>p10(p)===a.phone)),k=ct||a.vcf||{},L=db.ledger.filter(l=>l.accNo===n&&l.type!=='ACC_OPEN'&&eff(l));
+ let cr=0,dr=0;L.forEach(l=>{const d=dl(l);d>0?cr+=d:dr-=d});
+ const tel=(k.phones&&k.phones.length?k.phones:[a.phone]).map(p=>`<a href="tel:${esc(p)}" style="color:var(--yellow)">${esc(p)}</a>`).join('<br>'),lt=L[0];
+ const R=[['A/C NO',esc(n)],['OPENING REF ID',esc(a.refId||'PENDING')],['HOLDER',esc(nm)],['FATHER / SPOUSE',esc(a.father)],['PRIMARY MOBILE',esc(a.phone)],['ALL MOBILE NUMBERS ('+(k.phones||[a.phone]).length+')',tel],
+  ['EMAIL',esc(a.email)],['ALL EMAILS',esc((k.emails||[]).join(', '))],['ADDRESS',esc(a.address)],['OTHER ADDRESSES',esc((k.adr||[]).join(' | '))],['DATE OF BIRTH',esc(k.bday)],['NOTES',esc(k.note)],['ORGANISATION',esc(k.org)],['JOB TITLE',esc(k.title)],
+  ...Object.entries(k.other||{}).map(([x,y])=>[esc(x),esc(y)]),['STATUS',esc(a.status)],['SMS ALERTS',esc(a.sms)],['EMAIL ALERTS',a.emailOn?'ON':'OFF'],['OPENED',esc(a.openedAt)],['BALANCE','Rs.'+bal(n).toFixed(2)],
+  ['TRANSACTIONS',L.length],['TOTAL CREDIT','Rs.'+cr.toFixed(2)],['TOTAL DEBIT','Rs.'+dr.toFixed(2)],['LAST TRANSACTION',lt?esc(`${lt.type} ${(+lt.amount).toFixed(2)} | ${lt.date} ${lt.time} | REF ${lt.refId||'PENDING'}`):''],['LAST TX IP',esc(lt&&lt.ip)]].filter(r=>r[1]!==''&&r[1]!==undefined&&r[1]!==null);
+ const raw=ct&&ct.raw?ct.raw.split('\n').filter(l=>!/^(PHOTO|LOGO)/i.test(l)).join('\n').slice(0,4000):'';
+ modal('FULL DETAILS - '+n,`<div style="text-align:left;max-height:62vh;overflow:auto;font-size:.75rem"><table style="width:100%">${R.map(r=>`<tr><td class="dim" style="vertical-align:top;white-space:nowrap;padding-right:8px">${r[0]}</td><td style="word-break:break-word">${r[1]}</td></tr>`).join('')}</table>
+ <b>LAST 10 TRANSACTIONS</b><div>${L.slice(0,10).map(l=>`<div style="border-bottom:1px dashed var(--dim);padding:2px">${esc(l.date)} ${esc(l.type)} ${(+l.amount).toFixed(2)} | ${l.refId||'PENDING'}</div>`).join('')||'NONE'}</div>
+ ${raw?`<details style="margin-top:6px"><summary>ORIGINAL VCARD DATA</summary><pre style="white-space:pre-wrap;word-break:break-all">${esc(raw)}</pre></details>`:''}</div><button class="inverted" style="width:100%;margin-top:8px" onclick="closeGenericModal()">[ CLOSE ]</button>`)}
+
+</script>
 </body>
 </html>
